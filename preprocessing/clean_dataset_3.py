@@ -89,11 +89,19 @@ class TrafficDataCleaner:
 
 if __name__ == "__main__":
     INPUT = "datasets/dataset_3_passenger_traffic.csv"
+<<<<<<< HEAD
     OUTPUT = "outputs/traffic_cleaned.csv"
     
     if not os.path.exists(INPUT) and os.path.exists("../datasets/dataset_3_passenger_traffic.csv"):
         INPUT = "../datasets/dataset_3_passenger_traffic.csv"
         OUTPUT = "../outputs/traffic_cleaned.csv"
+=======
+    OUTPUT = "datasets/processed/traffic_cleaned.csv"
+    
+    if not os.path.exists(INPUT) and os.path.exists("../datasets/dataset_3_passenger_traffic.csv"):
+        INPUT = "../datasets/dataset_3_passenger_traffic.csv"
+        OUTPUT = "../datasets/processed/traffic_cleaned.csv"
+>>>>>>> 33975e16b9d24662f05736cae0a148dcbdcc471c
         
     cleaner = TrafficDataCleaner(INPUT, OUTPUT)
     cleaner.run_pipeline()
