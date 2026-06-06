@@ -177,7 +177,7 @@ The system allows you to manipulate real-world constraints via the dashboard:
 
 ## 👨‍💻 Engineering Standards
 
-This project adheres to **Google-grade AI/ML standards**:
+This project adheres to **Industry-grade AI/ML standards**:
 - **Clean Architecture:** Separation of Concerns (Entities, Services, Routes).
 - **Data Contracts:** Strict Pydantic schemas for API integrity.
 - **Production-Ready ML:** Automated logging, persistence, and feature scaling.
