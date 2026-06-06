@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class PredictionRequest(BaseModel):
+class DelayInput(BaseModel):
     # Features for Delay Prediction
     MONTH: int = Field(..., ge=1, le=12)
     DAY_OF_WEEK: int = Field(..., ge=1, le=7)
@@ -14,7 +14,7 @@ class PredictionRequest(BaseModel):
     is_weekend: int = Field(..., ge=0, le=1)
     congestion_score: float = Field(..., ge=0, le=1)
 
-class SatisfactionRequest(BaseModel):
+class SatisfactionInput(BaseModel):
     Age: int
     Flight_Distance: float
     Departure_Delay: float
@@ -23,6 +23,14 @@ class SatisfactionRequest(BaseModel):
     Loyal_Customer: int
     Personal_Travel: int
     Class_Eco: int
+
+class PredictionRequest(DelayInput):
+    """Alias for backward compatibility if needed."""
+    pass
+
+class SatisfactionRequest(SatisfactionInput):
+    """Alias for backward compatibility if needed."""
+    pass
 
 class SimulationRequest(BaseModel):
     scenario_name: str = "Baseline"

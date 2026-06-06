@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks
-from ..simulation.engine.sim_runner import sim_runner
+from simulation.engine.sim_runner import sim_runner
 import uuid
 
 router = APIRouter()

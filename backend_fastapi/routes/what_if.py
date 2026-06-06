@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from ..simulation.engine.sim_runner import sim_runner
+from simulation.engine.sim_runner import sim_runner
 
 router = APIRouter()
 

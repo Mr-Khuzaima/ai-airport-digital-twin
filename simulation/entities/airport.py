@@ -1,8 +1,8 @@
 import simpy
 from typing import Dict, List, Optional
-from ..services.gate_manager import GateManager
-from ..services.queue_manager import QueueManager
-from .flight import Flight
+from simulation.services.gate_manager import GateManager
+from simulation.services.queue_manager import QueueManager
+from simulation.entities.flight import Flight
 
 class Airport:
     """

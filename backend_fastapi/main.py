@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import simulate, ml_predict, what_if
+from backend_fastapi.routes import simulate, ml_predict, what_if
 
 app = FastAPI(
     title="AI Airport Digital Twin API",

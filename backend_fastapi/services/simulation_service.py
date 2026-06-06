@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict, Any
-from ..simulation.engine.sim_runner import sim_runner
-from ..schemas.request_models import SimulationRequest, WhatIfRequest
+from simulation.engine.sim_runner import sim_runner
+from backend_fastapi.schemas.request_models import SimulationRequest, WhatIfRequest
 
 class SimulationService:
     """

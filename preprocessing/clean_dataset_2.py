@@ -90,20 +90,12 @@ class SatisfactionDataCleaner:
 
 if __name__ == "__main__":
     INPUT = "datasets/dataset_2_train.csv"
-<<<<<<< HEAD
     OUTPUT = "outputs/satisfaction_cleaned.csv"
-=======
-    OUTPUT = "datasets/processed/satisfaction_cleaned.csv"
->>>>>>> 33975e16b9d24662f05736cae0a148dcbdcc471c
     
     # Check alternate paths
     if not os.path.exists(INPUT) and os.path.exists("../datasets/dataset_2_train.csv"):
         INPUT = "../datasets/dataset_2_train.csv"
-<<<<<<< HEAD
         OUTPUT = "../outputs/satisfaction_cleaned.csv"
-=======
-        OUTPUT = "../datasets/processed/satisfaction_cleaned.csv"
->>>>>>> 33975e16b9d24662f05736cae0a148dcbdcc471c
         
     cleaner = SatisfactionDataCleaner(INPUT, OUTPUT)
     cleaner.run_pipeline()

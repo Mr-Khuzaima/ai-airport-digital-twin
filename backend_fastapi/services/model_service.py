@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from tensorflow.keras.models import load_model
-from ..schemas.request_models import PredictionRequest, SatisfactionRequest
+from backend_fastapi.schemas.request_models import PredictionRequest, SatisfactionRequest
 
 class ModelService:
     """

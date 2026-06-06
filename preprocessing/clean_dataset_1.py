@@ -111,7 +111,6 @@ class FlightDataCleaner:
             raise
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     INPUT = "datasets/dataset_1_flights.csv"
     OUTPUT = "outputs/flights_cleaned.csv"
     
@@ -119,15 +118,6 @@ if __name__ == "__main__":
     if not os.path.exists(INPUT) and os.path.exists("../datasets/dataset_1_flights.csv"):
         INPUT = "../datasets/dataset_1_flights.csv"
         OUTPUT = "../outputs/flights_cleaned.csv"
-=======
-    INPUT = "../datasets/dataset_1_flights.csv"
-    OUTPUT = "../datasets/processed/flights_cleaned.csv"
-    
-    # Check if we are running from the project root or preprocessing folder
-    if not os.path.exists(INPUT) and os.path.exists("datasets/dataset_1_flights.csv"):
-        INPUT = "datasets/dataset_1_flights.csv"
-        OUTPUT = "datasets/processed/flights_cleaned.csv"
->>>>>>> 33975e16b9d24662f05736cae0a148dcbdcc471c
         
     cleaner = FlightDataCleaner(INPUT, OUTPUT)
     cleaner.run_pipeline()

@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from tensorflow.keras.models import load_model
-from pydantic import BaseModel
+from backend_fastapi.schemas.request_models import DelayInput, SatisfactionInput
 
 router = APIRouter()
 
@@ -19,28 +19,6 @@ try:
     satisfaction_model = joblib.load(SATISFACTION_MODEL_PATH)
 except Exception as e:
     print(f"Error loading ML models: {e}")
-
-class DelayInput(BaseModel):
-    MONTH: int
-    DAY_OF_WEEK: int
-    AIRLINE: int
-    ORIGIN_AIRPORT: int
-    DESTINATION_AIRPORT: int
-    DISTANCE: float
-    TAXI_OUT: float
-    rush_hour: int
-    is_weekend: int
-    congestion_score: float
-
-class SatisfactionInput(BaseModel):
-    Age: int
-    Flight_Distance: float
-    Departure_Delay: float
-    Arrival_Delay: float
-    Gender_Male: int
-    Loyal_Customer: int
-    Personal_Travel: int
-    Class_Eco: int
 
 @router.post("/delay")
 async def predict_delay(data: DelayInput):
