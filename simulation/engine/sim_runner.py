@@ -6,7 +6,11 @@ import joblib
 import logging
 import os
 from datetime import datetime, timedelta
-from tensorflow.keras.models import load_model
+try:
+    from tensorflow.keras.models import load_model
+    HAS_TENSORFLOW = True
+except ImportError:
+    HAS_TENSORFLOW = False
 from typing import List, Dict, Optional
 
 # Configure detailed logging
@@ -20,7 +24,11 @@ class MLService:
         try:
             self.delay_model = joblib.load(os.path.join(model_dir, "delay_prediction_model.pkl"))
             self.satisfaction_model = joblib.load(os.path.join(model_dir, "satisfaction_classifier.pkl"))
-            self.traffic_model = load_model(os.path.join(model_dir, "traffic_lstm_model.h5"))
+            if HAS_TENSORFLOW:
+                self.traffic_model = load_model(os.path.join(model_dir, "traffic_lstm_model.h5"))
+            else:
+                self.traffic_model = None
+                logger.warning("TensorFlow is not installed. LSTM Traffic Forecaster will use a fallback statistical model.")
             self.traffic_scaler = joblib.load(os.path.join(model_dir, "traffic_scaler.pkl"))
             logger.info("All ML models loaded successfully into Simulation Engine.")
         except Exception as e:
@@ -39,12 +47,19 @@ class MLService:
 
     def get_traffic_load(self) -> int:
         """Calls LSTM for macro-level passenger generation."""
-        # Using a representative sequence for forecasting (12 steps)
-        # In production, this would be historical data from the database
-        dummy_input = np.zeros((1, 12, 1))
-        scaled_pred = self.traffic_model.predict(dummy_input, verbose=0)
-        pax_count = self.traffic_scaler.inverse_transform(scaled_pred)[0][0]
-        return int(max(pax_count, 100)) # Floor at 100 for simulation viability
+        if HAS_TENSORFLOW and self.traffic_model is not None:
+            try:
+                # Using a representative sequence for forecasting (12 steps)
+                # In production, this would be historical data from the database
+                dummy_input = np.zeros((1, 12, 1))
+                scaled_pred = self.traffic_model.predict(dummy_input, verbose=0)
+                pax_count = self.traffic_scaler.inverse_transform(scaled_pred)[0][0]
+                return int(max(pax_count, 100)) # Floor at 100 for simulation viability
+            except Exception as e:
+                logger.error(f"Error running LSTM prediction: {e}. Using fallback load.")
+        
+        # Fallback normal distribution for passenger count
+        return int(random.normalvariate(150, 30))
 
 class Passenger:
     """Agent representing a traveler with state and satisfaction tracking."""

@@ -3,8 +3,8 @@ import joblib
 import os
 import numpy as np
 import pandas as pd
-from tensorflow.keras.models import load_model
 from backend_fastapi.schemas.request_models import DelayInput, SatisfactionInput
+
 
 router = APIRouter()
 
