@@ -25,6 +25,8 @@ interface SimulationParams {
   increase_flights_percent: number;
   security_counters: number;
   delay_offset_minutes: number;
+  weather_severity: number;
+  security_tech_level: 'standard' | 'advanced';
 }
 
 interface CongestionNode {
@@ -33,18 +35,28 @@ interface CongestionNode {
   color: string;
 }
 
+interface PassengerAgent {
+  id: string;
+  stage: number;
+  type: 'international' | 'domestic';
+  slotIndex: number;
+  lastStageTime: number; // For processing duration
+}
+
 interface SimulationContextType {
   metrics: SimulationMetrics;
   history: ChartPoint[];
   logs: string[];
   congestion: CongestionNode[];
-  activeStage: number;
+  passengers: PassengerAgent[];
   simType: 'international' | 'domestic';
   isFlying: boolean;
+  isPlaneReady: boolean;
   isPlaying: boolean;
   isResetting: boolean;
   hasMounted: boolean;
   simParams: SimulationParams;
+  setSimParams: React.Dispatch<React.SetStateAction<SimulationParams>>;
   setSimType: (type: 'international' | 'domestic') => void;
   setIsPlaying: (playing: boolean) => void;
   resetEnvironment: () => Promise<void>;
@@ -58,20 +70,27 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const [simType, setSimType] = useState<'international' | 'domestic'>('international');
-  const [activeStage, setActiveStage] = useState(0);
   const [isFlying, setIsFlying] = useState(false);
+  const [isPlaneReady, setIsPlaneReady] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
   const [history, setHistory] = useState<ChartPoint[]>([]);
+  const [passengers, setPassengers] = useState<PassengerAgent[]>([]);
+  const [nextPassengerId, setNextPassengerId] = useState(0);
+  const [planeTimer, setPlaneTimer] = useState(0);
+  
   const [congestion, setCongestion] = useState<CongestionNode[]>([
     { label: 'Check-In', value: 0, color: 'bg-orange-400' },
     { label: 'Security', value: 0, color: 'bg-blue-500' },
-    { label: 'Duty Free', value: 0, color: 'bg-indigo-400' },
+    { label: 'Lounge', value: 0, color: 'bg-indigo-400' },
     { label: 'Boarding', value: 0, color: 'bg-emerald-400' },
   ]);
+  
   const [simParams, setSimParams] = useState<SimulationParams>({
     increase_flights_percent: 0,
     security_counters: 5,
-    delay_offset_minutes: 0
+    delay_offset_minutes: 0,
+    weather_severity: 0,
+    security_tech_level: 'standard'
   });
 
   const [metrics, setMetrics] = useState<SimulationMetrics>({
@@ -86,120 +105,153 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     simTimeScale: '1.0x'
   });
 
-  // 1. Mount detection
   useEffect(() => {
     setHasMounted(true);
     setMetrics(prev => ({ ...prev, timestamp: new Date().toLocaleTimeString() }));
   }, []);
 
-  // 2. Main Simulation Tick (Global Source of Truth)
+  // Main Simulation Loop
   useEffect(() => {
     if (!hasMounted || !isPlaying) return;
 
     const interval = setInterval(() => {
-      // Stochastic Metrics influenced by simParams (What-If sync)
       const flightLoadMultiplier = 1 + (simParams.increase_flights_percent / 100);
       const securityCapacity = simParams.security_counters * 10;
       
-      const newFleet = Math.floor((15 + Math.random() * 15) * flightLoadMultiplier);
-      
-      // Latency increases as load exceeds capacity
-      const baseLatency = 10 + simParams.delay_offset_minutes;
-      const congestionPenalty = Math.max(0, (newFleet - securityCapacity) * 2);
-      const newLatency = parseFloat((baseLatency + Math.random() * 10 + congestionPenalty).toFixed(1));
-      
-      // Satisfaction drops with latency
-      const newSat = parseFloat(Math.max(0, Math.min(100, 95 - (newLatency / 2) + Math.random() * 5)).toFixed(1));
-      
-      const newThroughput = parseFloat((1.2 * (simParams.security_counters / 5) + Math.random() * 0.4).toFixed(1));
-      const timeStr = new Date().toLocaleTimeString();
-
-      // Realistic values for simulation tab metrics
-      const procSpeed = parseFloat((0.8 + Math.random() * 0.4).toFixed(2));
-      const activeRes = Math.floor(20 + simParams.security_counters + Math.random() * 5);
-      const eRate = Math.floor(40 + (simParams.increase_flights_percent / 2) + Math.random() * 10);
-
-      setMetrics({
-        activeFleet: newFleet,
-        latency: newLatency,
-        satisfaction: newSat,
-        throughput: newThroughput,
-        timestamp: timeStr,
-        processingSpeed: procSpeed,
-        activeResources: activeRes,
-        eventRate: eRate,
-        simTimeScale: '10x'
-      });
-
-      // Update Congestion Nodes in real-time
-      setCongestion(prev => prev.map(node => {
-        let baseVal = 40 + Math.random() * 20;
-        if (node.label === 'Security') baseVal += (simParams.increase_flights_percent / 4) - (simParams.security_counters * 2);
-        if (node.label === 'Check-In') baseVal += (simParams.increase_flights_percent / 5);
-        return {
-          ...node,
-          value: Math.floor(Math.max(10, Math.min(98, baseVal + Math.random() * 15)))
-        };
-      }));
-
-      // Update Chart History
-      setHistory(prev => {
-        const newPoint = { 
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 
-          flow: 500 * flightLoadMultiplier + Math.random() * 1000,
-          delay: newLatency
-        };
-        return [...prev, newPoint].slice(-15);
-      });
-
-      // Advance Simulation Stage
-      setActiveStage(prev => {
+      // 1. Plane Cycle Management
+      setPlaneTimer(prev => {
         const next = prev + 1;
-        const maxStages = simType === 'international' ? 6 : 5;
-        if (next >= maxStages) {
+        // Weather severity increases the time plane stays away
+        const weatherDelay = Math.floor(simParams.weather_severity / 10);
+        const totalCycle = 14 + (simParams.delay_offset_minutes / 10) + weatherDelay;
+        
+        if (next < 8) {
+          setIsPlaneReady(true);
+          setIsFlying(false);
+        } else if (next < 10) {
+          setIsPlaneReady(false);
           setIsFlying(true);
-          setTimeout(() => setIsFlying(false), 3000);
-          return 0;
+        } else if (next < totalCycle) {
+          setIsPlaneReady(false);
+          setIsFlying(false);
+        } else {
+          return 0; // Reset cycle
         }
         return next;
       });
 
-      // Generate Logs
-      const eventTypes = [
-        `Flight AI-102 context synced`,
-        `Agent ${Math.floor(Math.random()*1000)} biometrics verified`,
-        `Immigration node status: OPTIMAL`,
-        `Security throughput maintained @ ${newThroughput}k/hr`,
-        `Digital twin clock stabilized`,
-        `ML Inference: Latency delta within acceptable bounds`,
-        `Passenger facial scan successful`,
-        `International departure gate I-04 assigned`,
-        `Domestic gate D-12 cleared for boarding`
-      ];
-      const newLog = `[${timeStr}] ${eventTypes[Math.floor(Math.random() * eventTypes.length)]}`;
-      setLogs(prev => [newLog, ...prev].slice(0, 50));
+      // 2. Calculate Metrics
+      const currentPaxCount = passengers.length;
+      const baseLatency = 10 + simParams.delay_offset_minutes + (simParams.weather_severity / 2);
+      const congestionPenalty = Math.max(0, (currentPaxCount - securityCapacity) * 1.5);
+      const newLatency = parseFloat((baseLatency + Math.random() * 5 + congestionPenalty).toFixed(1));
+      const newSat = parseFloat(Math.max(0, Math.min(100, 95 - (newLatency / 2))).toFixed(1));
+      const timeStr = new Date().toLocaleTimeString();
+
+      setMetrics(prev => ({
+        ...prev,
+        activeFleet: currentPaxCount,
+        latency: newLatency,
+        satisfaction: newSat,
+        timestamp: timeStr,
+      }));
+
+      // 3. Update Passenger Flow Logic
+      setPassengers(prev => {
+        let updated = prev.map(p => {
+          let nextStage = p.stage;
+          const now = Date.now();
+          const timeInStage = now - p.lastStageTime;
+          
+          // Realistic Processing Times (ms)
+          const techMultiplier = simParams.security_tech_level === 'advanced' ? 0.6 : 1.0;
+          const processingTimes = [
+            0,    // Stage 0: Entrance
+            3000, // Stage 1: Check-in
+            (4000 + (20 / simParams.security_counters) * 1000) * techMultiplier, // Security
+            4000, // Stage 3: Lounge
+            2000, // Stage 4: Boarding
+            2000, // Stage 5: Inside Plane
+          ];
+
+          if (timeInStage >= (processingTimes[p.stage] || 2000)) {
+            // Stage-Specific Rules
+            if (p.stage === 3) { // Lounge -> Boarding
+              if (isPlaneReady) {
+                nextStage++;
+                return { ...p, stage: nextStage, lastStageTime: now };
+              }
+            } else if (p.stage === 2) { // Security -> Lounge
+              const canPass = Math.random() > (newLatency / 200);
+              if (canPass) {
+                nextStage++;
+                return { ...p, stage: nextStage, lastStageTime: now };
+              }
+            } else if (p.stage < 6) {
+              nextStage++;
+              return { ...p, stage: nextStage, lastStageTime: now };
+            }
+          }
+
+          // Removal Logic (Plane took off)
+          if (p.stage === 6 && isFlying) {
+            return null; 
+          }
+          
+          return p;
+        }).filter(p => p !== null) as PassengerAgent[];
+
+        // Spawning: Add new passengers at Entrance
+        const spawnRate = Math.floor(1 + (simParams.increase_flights_percent / 25) + Math.random());
+        if (updated.length < 150) {
+          const newSpawn: PassengerAgent[] = Array.from({ length: spawnRate }, (_, i) => ({
+            id: (nextPassengerId + i).toString(),
+            stage: 0,
+            type: Math.random() > 0.5 ? 'international' : 'domestic',
+            slotIndex: updated.length + i,
+            lastStageTime: Date.now()
+          }));
+          setNextPassengerId(prevId => prevId + spawnRate);
+          return [...updated, ...newSpawn];
+        }
+        return updated;
+      });
+
+      // 4. Update Congestion Metrics
+      setCongestion(prev => prev.map(node => {
+        const stagePax = passengers.filter(p => {
+          if (node.label === 'Check-In') return p.stage === 1;
+          if (node.label === 'Security') return p.stage === 2;
+          if (node.label === 'Lounge') return p.stage === 3;
+          if (node.label === 'Boarding') return p.stage === 4 || p.stage === 5;
+          return false;
+        }).length;
+        return { ...node, value: Math.min(100, stagePax * 8) };
+      }));
 
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [hasMounted, isPlaying, simType, simParams]);
+  }, [hasMounted, isPlaying, simParams, passengers, nextPassengerId, isPlaneReady, isFlying]);
 
-  // 3. Global Actions
   const resetEnvironment = async () => {
     setIsResetting(true);
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    setLogs([`[SYSTEM] Environment Purged. Re-syncing with AI Core...`]);
-    setHistory([]);
-    setCongestion(prev => prev.map(n => ({ ...n, value: 0 })));
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setPassengers([]);
+    setNextPassengerId(0);
+    setPlaneTimer(0);
+    setIsPlaneReady(true);
+    setIsFlying(false);
     setSimParams({
       increase_flights_percent: 0,
       security_counters: 5,
-      delay_offset_minutes: 0
+      delay_offset_minutes: 0,
+      weather_severity: 0,
+      security_tech_level: 'standard'
     });
-    setActiveStage(0);
-    setIsFlying(false);
     setIsResetting(false);
   };
+
 
   const runScenario = async (params: any) => {
     setIsResetting(true);
@@ -209,7 +261,9 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       setSimParams({
         increase_flights_percent: params.increase_flights_percent,
         security_counters: params.security_counters,
-        delay_offset_minutes: params.delay_offset_minutes
+        delay_offset_minutes: params.delay_offset_minutes,
+        weather_severity: params.weather_severity || 0,
+        security_tech_level: params.security_tech_level || 'standard'
       });
 
       if (res && res.metrics) {
@@ -230,8 +284,8 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SimulationContext.Provider value={{
-      metrics, history, logs, congestion, activeStage, simType, isFlying, isPlaying, isResetting, hasMounted, simParams,
-      setSimType, setIsPlaying, resetEnvironment, runScenario
+      metrics, history, logs, congestion, passengers, simType, isFlying, isPlaneReady, isPlaying, isResetting, hasMounted, simParams,
+      setSimParams, setSimType, setIsPlaying, resetEnvironment, runScenario
     }}>
       {children}
     </SimulationContext.Provider>

@@ -11,10 +11,11 @@ const ControlPanel = () => {
     increase_flights_percent: simParams.increase_flights_percent,
     security_counters: simParams.security_counters,
     delay_offset_minutes: simParams.delay_offset_minutes,
-    checkin_counters: 8,
+    weather_severity: simParams.weather_severity || 0,
+    security_tech_level: simParams.security_tech_level || 'standard',
   });
 
-  const handleUpdate = (key: string, val: number) => {
+  const handleUpdate = (key: string, val: any) => {
     setLocalParams(prev => ({ ...prev, [key]: val }));
   };
 
@@ -69,10 +70,48 @@ const ControlPanel = () => {
           />
         </div>
 
+        {/* Weather Severity */}
+        <div className="space-y-3">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span>Weather Severity</span>
+            <span className={localParams.weather_severity > 50 ? "text-rose-500" : "text-sky-500"}>
+              {localParams.weather_severity > 70 ? "STORM" : localParams.weather_severity > 30 ? "CLOUDY" : "CLEAR"} ({localParams.weather_severity}%)
+            </span>
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            step="10"
+            value={localParams.weather_severity}
+            onChange={(e) => handleUpdate('weather_severity', parseInt(e.target.value))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brand-600"
+          />
+        </div>
+
+        {/* Security Tech Level */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Technology</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleUpdate('security_tech_level', 'standard')}
+              className={`py-2 px-3 rounded-xl text-[10px] font-bold uppercase tracking-tight transition-all border ${localParams.security_tech_level === 'standard' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'}`}
+            >
+              Standard
+            </button>
+            <button
+              onClick={() => handleUpdate('security_tech_level', 'advanced')}
+              className={`py-2 px-3 rounded-xl text-[10px] font-bold uppercase tracking-tight transition-all border ${localParams.security_tech_level === 'advanced' ? 'bg-brand-600 text-white border-brand-600 shadow-md' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'}`}
+            >
+              Advanced AI
+            </button>
+          </div>
+        </div>
+
         {/* Delay Offset */}
         <div className="space-y-3">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
-            <span>Injected Delay</span>
+            <span>Manual Delay</span>
             <span className="text-brand-600">{localParams.delay_offset_minutes}m</span>
           </div>
           <input 
