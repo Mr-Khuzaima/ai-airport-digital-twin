@@ -9,61 +9,112 @@ import {
   Settings2, 
   PlaneTakeoff, 
   MonitorPlay,
-  Info 
+  Info,
+  X
 } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-const Sidebar = () => {
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
 
   const menuItems = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Simulation', path: '/simulation', icon: Activity },
-    { name: 'Video Simulation', path: '/video-simulation', icon: MonitorPlay },
-    { name: 'What-If Planner', path: '/what-if', icon: Settings2 },
+    { name: 'Simulation', path: '/dashboard/simulation', icon: Activity },
+    { name: 'What-If Planner', path: '/dashboard/what-if', icon: Settings2 },
   ];
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col fixed left-0 top-0 z-50">
-      <div className="p-8 flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-          <PlaneTakeoff className="text-white w-6 h-6" />
-        </div>
-        <span className="font-bold text-xl tracking-tight text-gray-900 font-sans">AeroTwin</span>
-      </div>
+    <>
+      {/* Mobile Overlay */}
+      <div 
+        className={cn(
+          "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={onClose}
+      />
 
-      <nav className="flex-1 px-4 space-y-2 mt-4">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600 shadow-sm' 
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-900'}`} />
-              <span className="font-semibold text-sm">{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="p-4 mt-auto">
-        <div className="bg-gray-900 rounded-2xl p-6 text-white relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-          <Info className="w-5 h-5 text-blue-400 mb-3" />
-          <p className="text-xs font-medium text-gray-400 mb-1">Status</p>
-          <p className="text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            AI Core Online
-          </p>
+      {/* Sidebar */}
+      <aside 
+        className={cn(
+          "fixed left-0 top-0 h-screen bg-white border-r border-slate-100 flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:w-72",
+          isOpen ? "translate-x-0 w-72" : "-translate-x-full"
+        )}
+      >
+        <div className="p-8 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-200 group-hover:scale-105 transition-transform duration-200">
+              <PlaneTakeoff className="text-white w-6 h-6" />
+            </div>
+            <span className="font-extrabold text-xl tracking-tight text-slate-900">AeroTwin</span>
+          </Link>
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      </div>
-    </div>
+
+        <nav className="flex-1 px-4 space-y-1.5 mt-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group font-medium text-sm",
+                  isActive 
+                    ? "bg-brand-50 text-brand-600 shadow-sm shadow-brand-100/50" 
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                )}
+              >
+                <Icon className={cn(
+                  "w-5 h-5 transition-colors",
+                  isActive ? "text-brand-600" : "text-slate-400 group-hover:text-slate-600"
+                )} />
+                <span>{item.name}</span>
+                {isActive && (
+                  <div className="ml-auto w-1.5 h-1.5 bg-brand-600 rounded-full" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 mt-auto">
+          <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/20 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 bg-white/10 rounded-xl">
+                  <Info className="w-4 h-4 text-brand-400" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">System Status</span>
+              </div>
+              <p className="text-sm font-bold flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                AI Core Online
+              </p>
+              <p className="text-[10px] text-slate-400 font-medium">Predictive engine active on Node-7</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 };
 

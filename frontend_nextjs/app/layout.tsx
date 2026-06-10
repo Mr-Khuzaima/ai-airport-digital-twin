@@ -1,4 +1,3 @@
-import Sidebar from "../components/Sidebar";
 import { SimulationProvider } from "../context/SimulationContext";
 import "../styles/globals.css";
 
@@ -16,12 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-slate-50 antialiased font-sans overflow-x-hidden">
         <SimulationProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 ml-64">
-              {children}
-            </main>
-          </div>
+          {children}
         </SimulationProvider>
       </body>
     </html>

@@ -139,6 +139,7 @@ python ml_models/train_traffic_model.py
 ### 4. Running the System
 ```bash
 # Terminal 1: Start Backend
+.venv\Scripts\activate 
 uvicorn backend_fastapi.main:app --reload
 
 # Terminal 2: Start Frontend

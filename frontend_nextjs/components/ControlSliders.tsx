@@ -26,25 +26,28 @@ const ControlSliders: React.FC<{
   };
 
   return (
-    <div className="space-y-6 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">Simulation Parameters</h2>
+    <div className="space-y-10">
       {sliders.map((s) => (
-        <div key={s.key} className="space-y-2">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-medium text-gray-600">{s.label}</label>
-            <span className="text-sm font-bold text-blue-600">
-              {params[s.key]}{s.suffix}
+        <div key={s.key} className="space-y-4 group">
+          <div className="flex justify-between items-end">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-brand-600 transition-colors">
+              {s.label}
+            </label>
+            <span className="text-xl font-black text-slate-900 font-mono tracking-tighter">
+              {params[s.key]}<span className="text-brand-500 ml-0.5">{s.suffix}</span>
             </span>
           </div>
-          <input
-            type="range"
-            min={s.min}
-            max={s.max}
-            step={s.step}
-            value={params[s.key]}
-            onChange={(e) => handleChange(s.key, parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-          />
+          <div className="relative flex items-center">
+            <input
+              type="range"
+              min={s.min}
+              max={s.max}
+              step={s.step}
+              value={params[s.key]}
+              onChange={(e) => handleChange(s.key, parseFloat(e.target.value))}
+              className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-brand-600"
+            />
+          </div>
         </div>
       ))}
     </div>
