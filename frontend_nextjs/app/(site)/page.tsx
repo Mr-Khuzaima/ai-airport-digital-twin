@@ -38,10 +38,10 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
             <Link
-              href="/dashboard"
+              href="/simulation"
               className="group w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-brand-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-500/40"
             >
-              Launch Console
+              View Simulation
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
@@ -160,10 +160,10 @@ export default function HomePage() {
           </div>
 
           <Link
-            href="/dashboard"
+            href="/simulation"
             className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 hover:bg-brand-600 text-white font-black rounded-[1.5rem] transition-all duration-300 text-base shadow-2xl shadow-slate-200 hover:shadow-brand-100 relative z-10"
           >
-            Access Controller
+            View Simulation
             <BarChart2 className="w-5 h-5" />
           </Link>
         </div>
