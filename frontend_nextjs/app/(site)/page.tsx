@@ -46,10 +46,10 @@ export default function HomePage() {
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/dashboard/simulation"
+              href="/simulation#live-metrics"
               className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2rem] text-lg font-bold backdrop-blur-md transition-all duration-300"
             >
-              Operator Console
+              View Live Metrics
             </Link>
           </div>
         </div>
