@@ -56,7 +56,7 @@ export default function SimulationTechPage() {
       title: "Next.js 14",
       icon: Layout,
       category: "UI Framework",
-      desc: "Next.js orchestrates the frontend. React Context API manages the global simulation state, ensuring the 3D scene stays in sync.",
+      desc: "Next.js orchestrates the frontend. React Context API manages the global simulation state, ensuring the 3D scene stays in sync.",  
       features: ["Server Components", "Context-driven state", "Optimized bundling"]
     }
   ];
@@ -111,7 +111,7 @@ export default function SimulationTechPage() {
                     {tech.category}
                   </span>
                 </div>
-                
+
                 <div className="space-y-3 flex-1">
                   <h3 className="text-lg font-black text-slate-900 tracking-tight">{tech.title}</h3>
                   <p className="text-slate-500 text-xs font-medium leading-relaxed">
@@ -136,7 +136,7 @@ export default function SimulationTechPage() {
       </div>
 
       {/* Action Footer */}
-      <section className="bg-slate-900 p-12 md:p-20 rounded-[3rem] text-white shadow-2xl relative overflow-hidden text-center space-y-8">
+      <section className="bg-slate-900 p-12 md:p-20 rounded-[3rem] text-white shadow-2xl relative overflow-hidden text-center space-y-8">      
         <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-brand-600/10 rounded-full -mr-32 -mt-32 blur-[100px]" />
         
         <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight relative z-10">

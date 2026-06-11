@@ -24,9 +24,11 @@ interface ChartPoint {
 interface SimulationParams {
   increase_flights_percent: number;
   security_counters: number;
+  checkin_counters: number; // Added checkin_counters
   delay_offset_minutes: number;
   weather_severity: number;
   security_tech_level: 'standard' | 'advanced';
+  time_of_day: number; // 0-23
 }
 
 interface CongestionNode {
@@ -49,6 +51,7 @@ interface SimulationContextType {
   logs: string[];
   congestion: CongestionNode[];
   passengers: PassengerAgent[];
+  activeStage: number; // Re-added
   simType: 'international' | 'domestic';
   isFlying: boolean;
   isPlaneReady: boolean;
@@ -70,6 +73,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const [simType, setSimType] = useState<'international' | 'domestic'>('international');
+  const [activeStage, setActiveStage] = useState(0); // Re-added
   const [isFlying, setIsFlying] = useState(false);
   const [isPlaneReady, setIsPlaneReady] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
@@ -88,9 +92,11 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [simParams, setSimParams] = useState<SimulationParams>({
     increase_flights_percent: 0,
     security_counters: 5,
+    checkin_counters: 4, // Default to 4 (2 Domestic, 2 International)
     delay_offset_minutes: 0,
     weather_severity: 0,
-    security_tech_level: 'standard'
+    security_tech_level: 'standard',
+    time_of_day: 12
   });
 
   const [metrics, setMetrics] = useState<SimulationMetrics>({
@@ -148,12 +154,21 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       const newSat = parseFloat(Math.max(0, Math.min(100, 95 - (newLatency / 2))).toFixed(1));
       const timeStr = new Date().toLocaleTimeString();
 
+      // New: Calculate processing speed and event rate
+      const activeRes = simParams.security_counters + simParams.checkin_counters;
+      const avgProcTime = (newLatency / 10).toFixed(1); // Scaled for display
+      const currentEventRate = Math.floor((currentPaxCount / 10) * (2 + Math.random()));
+
       setMetrics(prev => ({
         ...prev,
         activeFleet: currentPaxCount,
         latency: newLatency,
         satisfaction: newSat,
         timestamp: timeStr,
+        processingSpeed: parseFloat(avgProcTime),
+        activeResources: activeRes,
+        eventRate: currentEventRate,
+        simTimeScale: '1.0x'
       }));
 
       // 3. Update Passenger Flow Logic
@@ -165,13 +180,15 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
           
           // Realistic Processing Times (ms)
           const techMultiplier = simParams.security_tech_level === 'advanced' ? 0.6 : 1.0;
+          const weatherImpact = (simParams.weather_severity || 0) * 30; // Up to 3 seconds extra per stage
+
           const processingTimes = [
             0,    // Stage 0: Entrance
-            3000, // Stage 1: Check-in
-            (4000 + (20 / simParams.security_counters) * 1000) * techMultiplier, // Security
-            4000, // Stage 3: Lounge
-            2000, // Stage 4: Boarding
-            2000, // Stage 5: Inside Plane
+            (3000 * (4 / simParams.checkin_counters)) + weatherImpact, // Check-in scales with counter count
+            ((4000 + (20 / simParams.security_counters) * 1000) * techMultiplier) + weatherImpact, // Security
+            4000 + weatherImpact, // Stage 3: Lounge
+            2000 + weatherImpact, // Stage 4: Boarding
+            2000 + weatherImpact, // Stage 5: Inside Plane
           ];
 
           if (timeInStage >= (processingTimes[p.stage] || 2000)) {
@@ -229,10 +246,13 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         return { ...node, value: Math.min(100, stagePax * 8) };
       }));
 
+      // 5. Update Global Active Stage (Visual only)
+      setActiveStage(prev => (prev + 1) % (simType === 'international' ? 6 : 5));
+
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [hasMounted, isPlaying, simParams, passengers, nextPassengerId, isPlaneReady, isFlying]);
+  }, [hasMounted, isPlaying, simParams, passengers, nextPassengerId, isPlaneReady, isFlying, simType]);
 
   const resetEnvironment = async () => {
     setIsResetting(true);
@@ -242,12 +262,15 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     setPlaneTimer(0);
     setIsPlaneReady(true);
     setIsFlying(false);
+    setActiveStage(0); // Reset active stage
     setSimParams({
       increase_flights_percent: 0,
       security_counters: 5,
+      checkin_counters: 4,
       delay_offset_minutes: 0,
       weather_severity: 0,
-      security_tech_level: 'standard'
+      security_tech_level: 'standard',
+      time_of_day: 12
     });
     setIsResetting(false);
   };
@@ -261,6 +284,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       setSimParams({
         increase_flights_percent: params.increase_flights_percent,
         security_counters: params.security_counters,
+        checkin_counters: params.checkin_counters || 4,
         delay_offset_minutes: params.delay_offset_minutes,
         weather_severity: params.weather_severity || 0,
         security_tech_level: params.security_tech_level || 'standard'
@@ -284,7 +308,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SimulationContext.Provider value={{
-      metrics, history, logs, congestion, passengers, simType, isFlying, isPlaneReady, isPlaying, isResetting, hasMounted, simParams,
+      metrics, history, logs, congestion, passengers, activeStage, simType, isFlying, isPlaneReady, isPlaying, isResetting, hasMounted, simParams,
       setSimParams, setSimType, setIsPlaying, resetEnvironment, runScenario
     }}>
       {children}
