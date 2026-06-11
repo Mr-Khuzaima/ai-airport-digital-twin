@@ -380,7 +380,8 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         checkin_counters: params.checkin_counters || 4,
         delay_offset_minutes: params.delay_offset_minutes,
         weather_severity: params.weather_severity || 0,
-        security_tech_level: params.security_tech_level || 'standard'
+        security_tech_level: params.security_tech_level || 'standard',
+        time_of_day: params.time_of_day ?? 12 // Ensure time_of_day is updated
       });
 
       if (res && res.metrics) {

@@ -100,21 +100,15 @@ const Simulation3DCanvas = () => {
   const { passengers, isFlying, isPlaneReady, simParams } = useSimulation();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const fogColor = useMemo(() => {
-    if (simParams.weather_severity > 70) return '#475569';
-    if (simParams.weather_severity > 30) return '#94a3b8';
-    return '#e2e8f0';
-  }, [simParams.weather_severity]);
-
   const isNight = simParams.time_of_day < 6 || simParams.time_of_day > 18;
 
   const sunPosition = useMemo(() => [180, 70, -120], []);
   const moonPosition = useMemo(() => [-180, 70, -120], []);
 
   const ambientIntensity = useMemo(() => {
-    if (simParams.time_of_day >= 6 && simParams.time_of_day <= 18) return 0.6;
+    if (!isNight) return 0.8; // Increased for brighter day
     return 0.05;
-  }, [simParams.time_of_day]);
+  }, [isNight]);
 
   const toggleFullScreen = () => {
     if (!containerRef.current) return;
@@ -142,28 +136,23 @@ const Simulation3DCanvas = () => {
         <Suspense fallback={<LoadingState />}>
           <Sky 
             sunPosition={sunPosition as [number, number, number]} 
-            turbidity={isNight ? 10 : simParams.weather_severity / 10}
-            rayleigh={isNight ? 0.5 : simParams.weather_severity / 20}
+            turbidity={isNight ? 10 : 0.1} // Clearer sky for day
+            rayleigh={isNight ? 0.5 : 2}    // Better blue scattering
             mieCoefficient={0.005}
             mieDirectionalG={0.8}
           />
-          {isNight ? (
+          {isNight && (
             <Moon position={moonPosition as [number, number, number]} />
-          ) : (
-            <Sun position={sunPosition as [number, number, number]} />
           )}
           
-          {simParams.weather_severity > 20 && (
-            <fog attach="fog" args={[isNight ? "#020617" : fogColor, 30, 250]} />
-          )}
           <Stars radius={100} depth={50} count={5000} factor={isNight ? 6 : 0} saturation={0} fade speed={1} />
           <Environment preset={isNight ? "night" : "city"} />
           <ambientLight intensity={ambientIntensity} />
           <directionalLight 
             position={sunPosition as [number, number, number]} 
-            intensity={isNight ? 0.01 : 1.5} 
+            intensity={isNight ? 0.01 : 1.2} 
             castShadow={!isNight}
-            color={isNight ? "#1e1b4b" : "#fff"}
+            color={isNight ? "#1e1b4b" : "#fffbeb"}
           />
 
           <Infrastructure />

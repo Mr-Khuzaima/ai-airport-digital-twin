@@ -4,11 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { 
-  Cpu, 
-  Wind, 
-  Layout, 
   Box,
-  ArrowRight
+  ArrowRight,
+  BrainCircuit,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
 import ControlPanel from '@/components/Simulation3D/ControlPanel';
 import SimulationDashboard from '@/components/SimulationDashboard';
@@ -32,32 +32,32 @@ const Simulation3DCanvas = dynamic(
 export default function SimulationTechPage() {
   const techStack = [
     {
-      title: "Three.js & R3F",
+      title: "3D Visualization Engine",
       icon: Box,
-      category: "3D Engine",
-      desc: "Our realistic environment is powered by React Three Fiber, bringing high-performance WebGL rendering into the React component lifecycle.",
-      features: ["Component-based 3D", "PBR Materials", "Hardware Acceleration"]
+      category: "Three.js & R3F",
+      desc: "Our high-fidelity environment is powered by Three.js and React Three Fiber (R3F), translating abstract SimPy events into realistic spatial dynamics and PBR-rendered passenger behaviors.",
+      features: ["WebGL Acceleration", "Synchronized Avatars", "Real-time PBR Materials"]
     },
     {
-      title: "SimPy Engine",
-      icon: Cpu,
-      category: "Simulation Kernel",
-      desc: "The backbone of the project. It handles the discrete-event logic, resource management (queues, counters), and the timing of every agent.",
-      features: ["Process-based modeling", "Resource contention", "Interrupt-driven events"]
+      title: "Discrete-Event Kernel",
+      icon: Activity,
+      category: "SimPy & Python",
+      desc: "The backbone logic leverages SimPy. It models complex aircraft logistics, resource contention (queues), and the stochastic timing of every agent within a Python-driven environment.",
+      features: ["Process-based modeling", "Resource management", "Event-driven architecture"]
     },
     {
-      title: "Framer Motion",
-      icon: Wind,
-      category: "Motion Logic",
-      desc: "Smooth transitions between simulation states and UI interactions are orchestrated via Framer Motion's declarative animation API.",
-      features: ["Orchestrated sequences", "Layout transitions", "Spring physics"]
+      title: "Neural Inference Layer",
+      icon: BrainCircuit,
+      category: "XGBoost & LSTM",
+      desc: "A dual-model architecture using LSTM (RNN) for passenger traffic forecasting and XGBoost for real-time delay regression and satisfaction analysis, served via FastAPI.",
+      features: ["Predictive Analytics", "High-speed Inference", "Neural-Sim Synchronization"]
     },
     {
-      title: "Next.js 14",
-      icon: Layout,
-      category: "UI Framework",
-      desc: "Next.js orchestrates the frontend. React Context API manages the global simulation state, ensuring the 3D scene stays in sync.",
-      features: ["Server Components", "Context-driven state", "Optimized bundling"]
+      title: "Proactive AI Advisor",
+      icon: TrendingUp,
+      category: "Next.js & Context API",
+      desc: "The decision-support layer built with Next.js 14 and React Context. It monitors live telemetry to deliver automated strategic recommendations and real-time operational feedback.",
+      features: ["Bottleneck Detection", "Strategic Suggestions", "Dynamic State Management"]
     }
   ];
 
