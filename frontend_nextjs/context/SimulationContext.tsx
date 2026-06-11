@@ -16,19 +16,27 @@ interface SimulationMetrics {
 }
 
 interface ChartPoint {
-  time: string;
-  flow: number;
-  delay: number;
+  timestamp: string;
+  satisfaction: number;
+  actualTraffic: number;
+  predictedTraffic: number;
+  trafficChange: number;
+  checkInQueue: number;
+  securityQueue: number;
+  boardingQueue: number;
+  waitTimes: { range: string; count: number }[];
+  latency: number;
+  delayOffset: number;
 }
 
 interface SimulationParams {
   increase_flights_percent: number;
   security_counters: number;
-  checkin_counters: number; // Added checkin_counters
+  checkin_counters: number;
   delay_offset_minutes: number;
   weather_severity: number;
   security_tech_level: 'standard' | 'advanced';
-  time_of_day: number; // 0-23
+  time_of_day: number;
 }
 
 interface CongestionNode {
@@ -42,7 +50,7 @@ interface PassengerAgent {
   stage: number;
   type: 'international' | 'domestic';
   slotIndex: number;
-  lastStageTime: number; // For processing duration
+  lastStageTime: number;
 }
 
 interface SimulationContextType {
@@ -51,7 +59,7 @@ interface SimulationContextType {
   logs: string[];
   congestion: CongestionNode[];
   passengers: PassengerAgent[];
-  activeStage: number; // Re-added
+  activeStage: number;
   simType: 'international' | 'domestic';
   isFlying: boolean;
   isPlaneReady: boolean;
@@ -73,7 +81,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const [simType, setSimType] = useState<'international' | 'domestic'>('international');
-  const [activeStage, setActiveStage] = useState(0); // Re-added
+  const [activeStage, setActiveStage] = useState(0);
   const [isFlying, setIsFlying] = useState(false);
   const [isPlaneReady, setIsPlaneReady] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
@@ -92,7 +100,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [simParams, setSimParams] = useState<SimulationParams>({
     increase_flights_percent: 0,
     security_counters: 5,
-    checkin_counters: 4, // Default to 4 (2 Domestic, 2 International)
+    checkin_counters: 4,
     delay_offset_minutes: 0,
     weather_severity: 0,
     security_tech_level: 'standard',
@@ -116,148 +124,152 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     setMetrics(prev => ({ ...prev, timestamp: new Date().toLocaleTimeString() }));
   }, []);
 
-  // Main Simulation Loop
+  // Main Simulation & History Loop (Stable)
   useEffect(() => {
     if (!hasMounted || !isPlaying) return;
 
     const interval = setInterval(() => {
-      const flightLoadMultiplier = 1 + (simParams.increase_flights_percent / 100);
-      const securityCapacity = simParams.security_counters * 10;
-      
-      // 1. Plane Cycle Management
-      setPlaneTimer(prev => {
-        const next = prev + 1;
-        // Weather severity increases the time plane stays away
-        const weatherDelay = Math.floor(simParams.weather_severity / 10);
-        const totalCycle = 14 + (simParams.delay_offset_minutes / 10) + weatherDelay;
-        
-        if (next < 8) {
-          setIsPlaneReady(true);
-          setIsFlying(false);
-        } else if (next < 10) {
-          setIsPlaneReady(false);
-          setIsFlying(true);
-        } else if (next < totalCycle) {
-          setIsPlaneReady(false);
-          setIsFlying(false);
-        } else {
-          return 0; // Reset cycle
-        }
-        return next;
-      });
+      const now = Date.now();
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-      // 2. Calculate Metrics
-      const currentPaxCount = passengers.length;
-      const baseLatency = 10 + simParams.delay_offset_minutes + (simParams.weather_severity / 2);
-      const congestionPenalty = Math.max(0, (currentPaxCount - securityCapacity) * 1.5);
-      const newLatency = parseFloat((baseLatency + Math.random() * 5 + congestionPenalty).toFixed(1));
-      const newSat = parseFloat(Math.max(0, Math.min(100, 95 - (newLatency / 2))).toFixed(1));
-      const timeStr = new Date().toLocaleTimeString();
-
-      // New: Calculate processing speed and event rate
-      const activeRes = simParams.security_counters + simParams.checkin_counters;
-      const avgProcTime = (newLatency / 10).toFixed(1); // Scaled for display
-      const currentEventRate = Math.floor((currentPaxCount / 10) * (2 + Math.random()));
-
-      setMetrics(prev => ({
-        ...prev,
-        activeFleet: currentPaxCount,
-        latency: newLatency,
-        satisfaction: newSat,
-        timestamp: timeStr,
-        processingSpeed: parseFloat(avgProcTime),
-        activeResources: activeRes,
-        eventRate: currentEventRate,
-        simTimeScale: '1.0x'
-      }));
-
-      // 3. Update Passenger Flow Logic
-      setPassengers(prev => {
-        let updated = prev.map(p => {
-          let nextStage = p.stage;
-          const now = Date.now();
-          const timeInStage = now - p.lastStageTime;
-          
-          // Realistic Processing Times (ms)
-          const techMultiplier = simParams.security_tech_level === 'advanced' ? 0.6 : 1.0;
-          const weatherImpact = (simParams.weather_severity || 0) * 30; // Up to 3 seconds extra per stage
-
-          const processingTimes = [
-            0,    // Stage 0: Entrance
-            (3000 * (4 / simParams.checkin_counters)) + weatherImpact, // Check-in scales with counter count
-            ((4000 + (20 / simParams.security_counters) * 1000) * techMultiplier) + weatherImpact, // Security
-            4000 + weatherImpact, // Stage 3: Lounge
-            2000 + weatherImpact, // Stage 4: Boarding
-            2000 + weatherImpact, // Stage 5: Inside Plane
-          ];
-
-          if (timeInStage >= (processingTimes[p.stage] || 2000)) {
-            // Stage-Specific Rules
-            if (p.stage === 3) { // Lounge -> Boarding
-              if (isPlaneReady) {
-                nextStage++;
-                return { ...p, stage: nextStage, lastStageTime: now };
-              }
-            } else if (p.stage === 2) { // Security -> Lounge
-              const canPass = Math.random() > (newLatency / 200);
-              if (canPass) {
-                nextStage++;
-                return { ...p, stage: nextStage, lastStageTime: now };
-              }
-            } else if (p.stage < 6) {
-              nextStage++;
-              return { ...p, stage: nextStage, lastStageTime: now };
-            }
-          }
-
-          // Removal Logic (Plane took off)
-          if (p.stage === 6 && isFlying) {
-            return null; 
-          }
-          
-          return p;
-        }).filter(p => p !== null) as PassengerAgent[];
-
-        // Spawning: Add new passengers at Entrance
+      // 1. Update Simulation State
+      setPassengers(prevPassengers => {
+        // Spawning Logic
+        let updated = [...prevPassengers];
         const spawnRate = Math.floor(1 + (simParams.increase_flights_percent / 25) + Math.random());
+        
         if (updated.length < 150) {
           const newSpawn: PassengerAgent[] = Array.from({ length: spawnRate }, (_, i) => ({
-            id: (nextPassengerId + i).toString(),
+            id: `p-${Date.now()}-${i}`,
             stage: 0,
             type: Math.random() > 0.5 ? 'international' : 'domestic',
             slotIndex: updated.length + i,
-            lastStageTime: Date.now()
+            lastStageTime: now
           }));
-          setNextPassengerId(prevId => prevId + spawnRate);
-          return [...updated, ...newSpawn];
+          updated = [...updated, ...newSpawn];
         }
-        return updated;
+
+        // Processing Logic
+        return updated.map(p => {
+          let nextStage = p.stage;
+          const timeInStage = now - p.lastStageTime;
+          
+          const techMultiplier = simParams.security_tech_level === 'advanced' ? 0.6 : 1.0;
+          const weatherImpact = (simParams.weather_severity || 0) * 30;
+
+          const processingTimes = [
+            0,
+            (3000 * (4 / simParams.checkin_counters)) + weatherImpact,
+            ((4000 + (20 / simParams.security_counters) * 1000) * techMultiplier) + weatherImpact,
+            4000 + weatherImpact,
+            2000 + weatherImpact,
+            2000 + weatherImpact,
+          ];
+
+          if (timeInStage >= (processingTimes[p.stage] || 2000)) {
+            if (p.stage === 3) {
+              if (isPlaneReady) nextStage++;
+            } else if (p.stage === 2) {
+              if (Math.random() > 0.1) nextStage++;
+            } else if (p.stage < 6) {
+              nextStage++;
+            }
+            if (nextStage !== p.stage) return { ...p, stage: nextStage, lastStageTime: now };
+          }
+          return p;
+        }).filter(p => !(p.stage === 6 && isFlying));
       });
 
-      // 4. Update Congestion Metrics
-      setCongestion(prev => prev.map(node => {
-        const stagePax = passengers.filter(p => {
-          if (node.label === 'Check-In') return p.stage === 1;
-          if (node.label === 'Security') return p.stage === 2;
-          if (node.label === 'Lounge') return p.stage === 3;
-          if (node.label === 'Boarding') return p.stage === 4 || p.stage === 5;
-          return false;
-        }).length;
-        return { ...node, value: Math.min(100, stagePax * 8) };
-      }));
+      // 2. Update Metrics & History (Atomic update)
+      setPassengers(currentPax => {
+        setMetrics(prevM => {
+          const securityCapacity = simParams.security_counters * 10;
+          const baseLatency = 10 + simParams.delay_offset_minutes + (simParams.weather_severity / 2);
+          const congestionPenalty = Math.max(0, (currentPax.length - securityCapacity) * 1.5);
+          const newLatency = parseFloat((baseLatency + Math.random() * 5 + congestionPenalty).toFixed(1));
+          const newSat = parseFloat(Math.max(0, Math.min(100, 95 - (newLatency / 2))).toFixed(1));
+          
+          const newMetrics = {
+            ...prevM,
+            activeFleet: currentPax.length,
+            latency: newLatency,
+            satisfaction: newSat,
+            timestamp: timeStr,
+            processingSpeed: parseFloat((newLatency / 10).toFixed(1)),
+            activeResources: simParams.security_counters + simParams.checkin_counters,
+            eventRate: Math.floor((currentPax.length / 10) * (2 + Math.random())),
+          };
 
-      // 5. Update Global Active Stage (Visual only)
-      setActiveStage(prev => (prev + 1) % (simType === 'international' ? 6 : 5));
+          // Update History inside metrics update to ensure synchronization
+          setHistory(prevH => {
+            const waitTimes = [
+              { range: '0-2s', count: 0 }, { range: '2-5s', count: 0 },
+              { range: '5-10s', count: 0 }, { range: '10s+', count: 0 }
+            ];
+            currentPax.forEach(p => {
+              const wait = (now - p.lastStageTime) / 1000;
+              if (wait < 2) waitTimes[0].count++;
+              else if (wait < 5) waitTimes[1].count++;
+              else if (wait < 10) waitTimes[2].count++;
+              else waitTimes[3].count++;
+            });
+
+            const newPoint: ChartPoint = {
+              timestamp: timeStr,
+              satisfaction: newSat,
+              actualTraffic: currentPax.length,
+              predictedTraffic: Math.floor(100 * (1 + simParams.increase_flights_percent / 100) + Math.random() * 10),
+              trafficChange: prevH.length > 0 ? ((currentPax.length - prevH[prevH.length-1].actualTraffic) / (prevH[prevH.length-1].actualTraffic || 1)) * 100 : 0,
+              checkInQueue: currentPax.filter(p => p.stage === 1).length,
+              securityQueue: currentPax.filter(p => p.stage === 2).length,
+              boardingQueue: currentPax.filter(p => p.stage === 4 || p.stage === 5).length,
+              waitTimes,
+              latency: newLatency,
+              delayOffset: simParams.delay_offset_minutes,
+              scatterX: simParams.delay_offset_minutes + (Math.random() - 0.5) * 4 // Add jitter
+            };
+            return [...prevH, newPoint].slice(-30);
+          });
+
+          return newMetrics;
+        });
+
+        // Update Congestion
+        setCongestion(prevC => prevC.map(node => {
+          const stagePax = currentPax.filter(p => {
+            if (node.label === 'Check-In') return p.stage === 1;
+            if (node.label === 'Security') return p.stage === 2;
+            if (node.label === 'Lounge') return p.stage === 3;
+            if (node.label === 'Boarding') return p.stage === 4 || p.stage === 5;
+            return false;
+          }).length;
+          return { ...node, value: Math.min(100, stagePax * 8) };
+        }));
+
+        return currentPax;
+      });
+
+      // 3. Plane Cycle
+      setPlaneTimer(prev => {
+        const next = prev + 1;
+        const totalCycle = 14 + (simParams.delay_offset_minutes / 10) + Math.floor(simParams.weather_severity / 10);
+        if (next < 8) { setIsPlaneReady(true); setIsFlying(false); }
+        else if (next < 10) { setIsPlaneReady(false); setIsFlying(true); }
+        else if (next < totalCycle) { setIsPlaneReady(false); setIsFlying(false); }
+        else return 0;
+        return next;
+      });
 
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [hasMounted, isPlaying, simParams, passengers, nextPassengerId, isPlaneReady, isFlying, simType]);
+  }, [hasMounted, isPlaying, simParams, isPlaneReady, isFlying]);
 
   const resetEnvironment = async () => {
     setIsResetting(true);
     await new Promise(resolve => setTimeout(resolve, 800));
     setPassengers([]);
+    setHistory([]); // Clear history on reset
     setNextPassengerId(0);
     setPlaneTimer(0);
     setIsPlaneReady(true);
