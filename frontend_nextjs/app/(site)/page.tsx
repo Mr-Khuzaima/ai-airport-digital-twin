@@ -9,7 +9,8 @@ import {
   CheckCircle,
   Database,
   BarChart2,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -29,26 +30,26 @@ export default function HomePage() {
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.95] bg-gradient-to-b from-white via-slate-100 to-slate-500 bg-clip-text text-transparent">
             Simulate. Predict. <br className="hidden md:block" />
-            <span className="text-brand-500">Optimize.</span>
+            <span className="text-brand-500">Transform.</span>
           </h1>
           
           <p className="text-lg md:text-2xl text-slate-400 font-medium max-w-3xl mx-auto leading-relaxed">
-            Harnessing <span className="text-slate-200 font-bold">SimPy</span> event modeling with <span className="text-slate-200 font-bold">LSTM</span> & <span className="text-slate-200 font-bold">XGBoost</span> to resolve real-world aviation bottlenecks before they happen.
+            Harnessing <span className="text-slate-200 font-bold">SimPy</span> event modeling with <span className="text-slate-200 font-bold">LSTM</span> & <span className="text-slate-200 font-bold">XGBoost</span> to resolve real-world aviation bottlenecks in a high-fidelity <span className="text-brand-400">3D Digital Twin</span>.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
             <Link
-              href="/dashboard"
+              href="/simulation"
               className="group w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-brand-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-500/40"
             >
-              Launch Console
+              Start Simulation
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/overview"
+              href="/dashboard/simulation"
               className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2rem] text-lg font-bold backdrop-blur-md transition-all duration-300"
             >
-              Architecture
+              Operator Console
             </Link>
           </div>
         </div>
@@ -57,11 +58,14 @@ export default function HomePage() {
       {/* Core Pillars */}
       <section className="space-y-16">
         <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+            Aviation Intelligence
+          </div>
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            N-Tier Intelligent Core
+            Integrated Simulation Ecosystem
           </h2>
           <p className="text-slate-500 text-lg font-medium">
-            A multi-layered synchronization of data streams, neural networks, and event-driven kernels.
+            A seamless synchronization of data streams, neural networks, and 3D event kernels.
           </p>
         </div>
 
@@ -97,6 +101,57 @@ export default function HomePage() {
             <p className="text-slate-500 font-medium leading-relaxed">
               Recurrent neural networks forecasting passenger load trends with high-confidence intervals for strategic planning.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live 3D Twin Preview */}
+      <section className="relative overflow-hidden bg-slate-900 rounded-[4rem] p-12 md:p-24 text-white shadow-3xl">
+        <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-brand-600/10 rounded-full blur-[120px] -mr-48 -mt-48" />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+          <div className="space-y-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-brand-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+              High-Fidelity Rendering
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">
+              A Living, Breathing <br />
+              <span className="text-brand-500">3D Environment.</span>
+            </h2>
+            <p className="text-slate-400 text-lg md:text-xl font-medium leading-relaxed max-w-xl">
+              Witness the simulation unfold in a realistic 3D space. Track every agent's path, 
+              from arrival at the terminal to boarding the aircraft.
+            </p>
+            <div className="flex flex-wrap gap-8 pt-4">
+              <div className="space-y-2">
+                <span className="text-3xl font-black text-white">40ms</span>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Physics Update</p>
+              </div>
+              <div className="w-[1px] h-12 bg-white/10 hidden sm:block" />
+              <div className="space-y-2">
+                <span className="text-3xl font-black text-white">60fps</span>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">WebGL Performance</p>
+              </div>
+              <div className="w-[1px] h-12 bg-white/10 hidden sm:block" />
+              <div className="space-y-2">
+                <span className="text-3xl font-black text-white">100%</span>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Agent Autonomy</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative aspect-video bg-slate-800 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl group">
+             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542296332-2e4473faf563?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40 group-hover:scale-110 transition-transform duration-[20s]" />
+             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+             <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Terminal B Preview</p>
+                  <p className="text-lg font-black text-white">Real-time Pathfinding</p>
+                </div>
+                <div className="p-4 bg-white text-slate-900 rounded-2xl shadow-xl">
+                  <Zap className="w-6 h-6 animate-pulse" />
+                </div>
+             </div>
           </div>
         </div>
       </section>
@@ -160,10 +215,10 @@ export default function HomePage() {
           </div>
 
           <Link
-            href="/dashboard"
+            href="/simulation"
             className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 hover:bg-brand-600 text-white font-black rounded-[1.5rem] transition-all duration-300 text-base shadow-2xl shadow-slate-200 hover:shadow-brand-100 relative z-10"
           >
-            Access Controller
+            Launch Simulation
             <BarChart2 className="w-5 h-5" />
           </Link>
         </div>

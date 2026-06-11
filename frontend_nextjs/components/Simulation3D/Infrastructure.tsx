@@ -4,157 +4,588 @@ import React, { useMemo } from 'react';
 import { Html, Float, useGLTF } from '@react-three/drei';
 import { useSimulation } from '@/context/SimulationContext';
 
+// --- DETAILED COMPONENTS ---
+
+const LightPole = ({ position, isNight }: { position: [number, number, number], isNight: boolean }) => (
+  <group position={position}>
+    {/* Pole */}
+    <mesh position={[0, 4, 0]}>
+      <cylinderGeometry args={[0.1, 0.15, 8, 8]} />
+      <meshStandardMaterial color="#475569" metalness={0.8} />
+    </mesh>
+    {/* Lamp Arm */}
+    <mesh position={[0.5, 7.8, 0]} rotation={[0, 0, Math.PI / 4]}>
+      <boxGeometry args={[1, 0.1, 0.2]} />
+      <meshStandardMaterial color="#475569" />
+    </mesh>
+    {/* Lamp Head */}
+    <mesh position={[1, 7.5, 0]}>
+      <boxGeometry args={[0.6, 0.2, 0.8]} />
+      <meshStandardMaterial 
+        color={isNight ? "#fff" : "#1e293b"} 
+        emissive={isNight ? "#fbbf24" : "#333"} 
+        emissiveIntensity={isNight ? 10 : 0.5} 
+      />
+    </mesh>
+    {/* Light Source */}
+    {isNight && (
+      <pointLight 
+        position={[1, 7.2, 0]} 
+        intensity={300} 
+        distance={40} 
+        color="#fbbf24" 
+      />
+    )}
+  </group>
+);
+
+const CustomSecurityScanner = ({ position, isNight }: { position: [number, number, number], isNight: boolean }) => (
+  <group position={position}>
+    {/* Conveyor Belt System */}
+    <mesh position={[0, 0.4, 0]} receiveShadow>
+      <boxGeometry args={[8, 0.2, 2.5]} />
+      <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.8} />
+    </mesh>
+    
+    {/* Rollers under belt */}
+    {[...Array(8)].map((_, i) => (
+      <mesh key={i} position={[(i - 3.5) * 1, 0.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 2.4, 8]} />
+        <meshStandardMaterial color="#475569" metalness={0.9} />
+      </mesh>
+    ))}
+
+    {/* Main Scanner Housing (The Box) */}
+    <group position={[0, 1.2, 0]}>
+      {/* Outer Shell */}
+      <mesh castShadow>
+        <boxGeometry args={[3.5, 1.8, 3]} />
+        <meshStandardMaterial color="#94a3b8" metalness={0.4} roughness={0.3} />
+      </mesh>
+      
+      {/* Top Detail Plate */}
+      <mesh position={[0, 0.95, 0]}>
+        <boxGeometry args={[3.6, 0.1, 3.1]} />
+        <meshStandardMaterial color="#cbd5e1" metalness={0.8} />
+      </mesh>
+
+      {/* Internal Scanning Tunnel (Visual) */}
+      <mesh position={[0, -0.1, 0]}>
+        <boxGeometry args={[3.55, 1.4, 2.4]} />
+        <meshStandardMaterial 
+          color="#0ea5e9" 
+          emissive="#38bdf8" 
+          emissiveIntensity={isNight ? 1.5 : 0.4} 
+          transparent 
+          opacity={0.3} 
+        />
+      </mesh>
+
+      {/* High-Tech Side Panels */}
+      {[-1.55, 1.55].map((x, i) => (
+        <group key={i} position={[x, 0, 0]}>
+          <mesh>
+            <boxGeometry args={[0.05, 1.2, 2.8]} />
+            <meshStandardMaterial color="#475569" />
+          </mesh>
+          {/* Glowing Stripes */}
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[0.06, 0.1, 2.5]} />
+            <meshStandardMaterial 
+              color="#38bdf8" 
+              emissive="#38bdf8" 
+              emissiveIntensity={isNight ? 2 : 0.5} 
+            />
+          </mesh>
+          {/* SECURITY TEXT */}
+          <Html 
+            position={[x > 0 ? 0.04 : -0.04, 0.4, 0]} 
+            rotation={[0, x > 0 ? Math.PI / 2 : -Math.PI / 2, 0]} 
+            transform 
+            distanceFactor={4}
+          >
+            <div className="bg-slate-900 text-yellow-500 px-3 py-1 border-2 border-yellow-600 rounded-sm font-black text-[12px] tracking-widest uppercase whitespace-nowrap select-none">
+              SECURITY
+            </div>
+          </Html>
+        </group>
+      ))}
+
+      {/* Operator Monitor Panel */}
+      <group position={[0, 1.2, 1.2]} rotation={[-Math.PI / 6, 0, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[1.2, 0.8, 0.1]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+        <mesh position={[0, 0, 0.06]}>
+          <planeGeometry args={[1, 0.6]} />
+          <meshStandardMaterial 
+            color="#000" 
+            emissive="#22c55e" 
+            emissiveIntensity={isNight ? 0.8 : 0.2} 
+          />
+        </mesh>
+      </group>
+    </group>
+
+    {/* Passenger Metal Detector Arch */}
+    <group position={[-3.5, 1.5, 0]}>
+      {/* Side Pillars */}
+      <mesh position={[0, -0.5, 1.2]} castShadow>
+        <boxGeometry args={[0.4, 3, 0.4]} />
+        <meshStandardMaterial color="#475569" metalness={0.8} />
+      </mesh>
+      <mesh position={[0, -0.5, -1.2]} castShadow>
+        <boxGeometry args={[0.4, 3, 0.4]} />
+        <meshStandardMaterial color="#475569" metalness={0.8} />
+      </mesh>
+      {/* Top Arch */}
+      <mesh position={[0, 1, 0]} castShadow>
+        <boxGeometry args={[0.4, 0.4, 2.8]} />
+        <meshStandardMaterial color="#475569" metalness={0.8} />
+      </mesh>
+      
+      {/* Indicator Light */}
+      <mesh position={[0, 1, 1]} rotation={[0, Math.PI / 2, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial 
+          color="#22c55e" 
+          emissive="#22c55e" 
+          emissiveIntensity={isNight ? 2 : 0.5} 
+        />
+      </mesh>
+    </group>
+
+    {/* Floor Markings */}
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, 0]}>
+      <planeGeometry args={[9, 4]} />
+      <meshStandardMaterial color="#334155" transparent opacity={0.2} />
+    </mesh>
+  </group>
+);
+
+const CheckInCounter = ({ position, color, label }: { position: [number, number, number], color: string, label: string }) => (
+  <group position={position}>
+    <mesh position={[0, 0.6, 0]} castShadow>
+      <boxGeometry args={[2, 1.2, 3.5]} />
+      <meshStandardMaterial color="#f8fafc" />
+    </mesh>
+    <mesh position={[0, 1.25, 0]}>
+      <boxGeometry args={[2.1, 0.1, 3.6]} />
+      <meshStandardMaterial color="#334155" roughness={0.1} />
+    </mesh>
+    <group position={[-0.8, 1.8, 0]} rotation={[0, Math.PI / 2, 0]}>
+      <mesh>
+        <boxGeometry args={[1.5, 1, 0.1]} />
+        <meshStandardMaterial color="#0f172a" />
+      </mesh>
+      <Html transform distanceFactor={3} position={[0, 0, 0.06]}>
+        <div className={`px-2 py-1 rounded text-[6px] font-black text-white ${color} flex flex-col items-center`}>
+          <span>{label}</span>
+          <span className="opacity-50">OPEN</span>
+        </div>
+      </Html>
+    </group>
+    <mesh position={[0, 0.2, 2.2]}>
+      <boxGeometry args={[1.8, 0.2, 1.5]} />
+      <meshStandardMaterial color="#94a3b8" />
+    </mesh>
+  </group>
+);
+
+const PakistaniCurb = ({ position, length }: { position: [number, number, number], length: number }) => (
+  <group position={position}>
+    {[...Array(Math.floor(length / 2))].map((_, i) => (
+      <mesh key={i} position={[0, 0.25, i * 2 - length / 2]}>
+        <boxGeometry args={[0.5, 0.5, 2]} />
+        <meshStandardMaterial color={i % 2 === 0 ? "#facc15" : "#111827"} />
+      </mesh>
+    ))}
+  </group>
+);
+
+const SecurityFence = ({ position, rotation = [0, 0, 0], length = 20 }: { position: [number, number, number], rotation?: [number, number, number], length?: number }) => (
+  <group position={position} rotation={rotation}>
+    <mesh position={[0, 4, 0]}>
+      <planeGeometry args={[length, 8]} />
+      <meshStandardMaterial color="#94a3b8" transparent opacity={0.3} wireframe />
+    </mesh>
+    {[...Array(Math.floor(length / 5) + 1)].map((_, i) => (
+      <mesh key={i} position={[(i * 5) - (length / 2), 4, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 8]} />
+        <meshStandardMaterial color="#475569" />
+      </mesh>
+    ))}
+  </group>
+);
+
+const CustomRunway = ({ position, isNight }: { position: [number, number, number], isNight: boolean }) => (
+  <group position={position}>
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, -50]}>
+      <planeGeometry args={[40, 220]} />
+      <meshStandardMaterial color="#1e293b" roughness={0.9} />
+    </mesh>
+    {[...Array(15)].map((_, i) => (
+      <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.02, (i * 12) - 130]}>
+        <planeGeometry args={[0.8, 6]} />
+        <meshStandardMaterial 
+          color="#ffffff" 
+          emissive="#ffffff" 
+          emissiveIntensity={isNight ? 10 : 0.5} 
+        />
+      </mesh>
+    ))}
+    <mesh rotation-x={-Math.PI / 2} position={[-18, 0.015, -50]}>
+      <planeGeometry args={[0.5, 220]} />
+      <meshStandardMaterial color="#facc15" />
+    </mesh>
+    <mesh rotation-x={-Math.PI / 2} position={[18, 0.015, -50]}>
+      <planeGeometry args={[0.5, 220]} />
+      <meshStandardMaterial color="#facc15" />
+    </mesh>
+    <Html position={[0, 0.1, 40]} rotation={[-Math.PI / 2, 0, 0]} transform distanceFactor={10}>
+       <span className="text-8xl font-black text-white/40 select-none">36L</span>
+    </Html>
+  </group>
+);
+
+const Car = ({ position, color }: { position: [number, number, number], color: string }) => (
+  <group position={position}>
+    <mesh position={[0, 0.4, 0]} castShadow>
+      <boxGeometry args={[4, 0.8, 2]} />
+      <meshStandardMaterial color={color} />
+    </mesh>
+    <mesh position={[-0.5, 1, 0]} castShadow>
+      <boxGeometry args={[2, 0.6, 1.8]} />
+      <meshStandardMaterial color={color} />
+    </mesh>
+    {[[-1.2, 0.2, 0.9], [1.2, 0.2, 0.9], [-1.2, 0.2, -0.9], [1.2, 0.2, -0.9]].map((pos, i) => (
+      <mesh key={i} position={pos as [number, number, number]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.3, 0.3, 0.4]} />
+        <meshStandardMaterial color="#111" />
+      </mesh>
+    ))}
+  </group>
+);
+
+const Tree = ({ position }: { position: [number, number, number] }) => {
+  const { scene } = useGLTF('/models/tree.glb');
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
+  return (
+    <group position={position}>
+      <primitive object={clonedScene} scale={3} />
+    </group>
+  );
+};
+
 const Infrastructure = () => {
   const { simParams, metrics, isPlaneReady } = useSimulation();
-  const { scene: securityScene } = useGLTF('/models/airport_security_check.glb');
-  const { scene: runwayScene } = useGLTF('/models/runway.glb');
+  const isNight = simParams.time_of_day < 6 || simParams.time_of_day > 18;
+
+  // Dynamic Counter Calculation
+  const numCheckin = simParams.checkin_counters || 4;
+  const domesticCount = Math.ceil(numCheckin / 2);
+  const internationalCount = Math.floor(numCheckin / 2);
 
   return (
     <group>
-      {/* Floor */}
-      <mesh rotation-x={-Math.PI / 2} position-y={0} receiveShadow>
-        <planeGeometry args={[160, 100]} />
-        <meshStandardMaterial color="#f1f5f9" roughness={0.8} />
-      </mesh>
-      
-      {/* Grid Helper */}
-      <gridHelper args={[160, 60, "#cbd5e1", "#e2e8f0"]} position-y={0.01} />
+      {/* Scattered Trees in Green Areas */}
+      <group>
+        <Tree position={[-120, 0, -100]} />
+        <Tree position={[-120, 0, 100]} />
+        <Tree position={[100, 0, -100]} />
+        <Tree position={[100, 0, 100]} />
+        <Tree position={[-40, 0, 110]} />
+        <Tree position={[-40, 0, -110]} />
+        <Tree position={[30, 0, 110]} />
+        <Tree position={[30, 0, -110]} />
+        <Tree position={[-130, 0, 0]} />
+        <Tree position={[110, 0, 0]} />
+      </group>
 
-      {/* Check-In Area (Linear X: -35) */}
-      <group position={[-35, 0, 0]}>
-        <Html position={[0, 4, 0]} center distanceFactor={15}>
-          <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-200 shadow-xl whitespace-nowrap">
-            <p className="text-slate-900 font-black text-xs tracking-tighter uppercase">Check-In Terminal</p>
-          </div>
-        </Html>
-        {[...Array(4)].map((_, i) => (
-          <mesh key={i} position={[0, 0.5, (i - 1.5) * 4]}>
-            <boxGeometry args={[1, 1, 3]} />
+      {/* --- LIGHT POLES --- */}
+      {/* Road Lighting */}
+      {[...Array(6)].map((_, i) => (
+        <LightPole key={`road-light-${i}`} position={[-136, 0, (i - 2.5) * 40]} isNight={isNight} />
+      ))}
+      
+      {/* Parking Lighting */}
+      <LightPole position={[-85, 0, 25]} isNight={isNight} />
+      <LightPole position={[-85, 0, -25]} isNight={isNight} />
+      
+      {/* Runway Lighting */}
+      {[...Array(8)].map((_, i) => (
+        <React.Fragment key={`runway-lights-${i}`}>
+          <LightPole position={[50, 0, (i * 30) - 130]} isNight={isNight} />
+          <LightPole position={[90, 0, (i * 30) - 130]} isNight={isNight} />
+        </React.Fragment>
+      ))}
+
+      {/* Terminal Front Lighting */}
+      <LightPole position={[-65, 0, 15]} isNight={isNight} />
+      <LightPole position={[-65, 0, -15]} isNight={isNight} />
+
+      {/* --- PERIMETER FENCE LIGHTING --- */}
+      {/* Left Fence */}
+      {[...Array(4)].map((_, i) => (
+        <LightPole key={`left-fence-${i}`} position={[-138, 0, (i - 1.5) * 80]} isNight={isNight} />
+      ))}
+      {/* Right Fence */}
+      {[...Array(4)].map((_, i) => (
+        <LightPole key={`right-fence-${i}`} position={[118, 0, (i - 1.5) * 80]} isNight={isNight} />
+      ))}
+      {/* Top/Bottom Fences */}
+      {[...Array(4)].map((_, i) => (
+        <React.Fragment key={`top-bottom-${i}`}>
+          <LightPole position={[(i - 1.5) * 80, 0, -128]} isNight={isNight} />
+          <LightPole position={[(i - 1.5) * 80, 0, 128]} isNight={isNight} />
+        </React.Fragment>
+      ))}
+
+      {/* --- INTERIOR TERMINAL LIGHTING --- */}
+      {isNight && (
+        <group>
+          <pointLight position={[-40, 8, 20]} intensity={150} distance={60} color="#fff" />
+          <pointLight position={[-40, 8, -20]} intensity={150} distance={60} color="#fff" />
+          <pointLight position={[0, 8, 0]} intensity={150} distance={60} color="#fff" />
+          <pointLight position={[20, 8, 20]} intensity={150} distance={60} color="#fff" />
+          <pointLight position={[20, 8, -20]} intensity={150} distance={60} color="#fff" />
+        </group>
+      )}
+
+      {/* --- 1. EXTERIOR & PERIMETER --- */}
+      <mesh rotation-x={-Math.PI / 2} position={[-20, -0.05, 0]} receiveShadow>
+        <planeGeometry args={[260, 260]} />
+        <meshStandardMaterial color="#14532d" roughness={1} />
+      </mesh>
+
+      <SecurityFence position={[-140, 0, 0]} rotation={[0, Math.PI / 2, 0]} length={260} />
+      <SecurityFence position={[-10, 0, -130]} rotation={[0, 0, 0]} length={260} />
+      <SecurityFence position={[-10, 0, 130]} rotation={[0, 0, 0]} length={260} />
+      <SecurityFence position={[120, 0, 0]} rotation={[0, Math.PI / 2, 0]} length={260} />
+
+      {/* FIXED ROAD (X: -125) */}
+      <group position={[-125, 0, 0]}>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, 0]}>
+          <planeGeometry args={[20, 140]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+        {[...Array(10)].map((_, i) => (
+          <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.02, (i - 4.5) * 14]}>
+            <planeGeometry args={[0.5, 6]} />
+            <meshStandardMaterial color="#ffffff" emissive="#ffffff" />
+          </mesh>
+        ))}
+        <PakistaniCurb position={[-10.2, 0, 0]} length={140} />
+        <PakistaniCurb position={[10.2, 0, 0]} length={140} />
+      </group>
+
+      {/* FIXED PARKING (X: -95, Shorter Z-length 60) */}
+      <group position={[-95, 0, 0]}>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, 0]}>
+          <planeGeometry args={[25, 60]} />
+          <meshStandardMaterial color="#475569" />
+        </mesh>
+        {[...Array(6)].map((_, i) => (
+          <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.02, (i - 2.5) * 10]}>
+            <planeGeometry args={[22, 0.2]} />
+            <meshStandardMaterial color="#facc15" />
+          </mesh>
+        ))}
+        <Car position={[-5, 0, -25]} color="#ef4444" />
+        <Car position={[5, 0, -15]} color="#3b82f6" />
+        <Car position={[-2, 0, 5]} color="#10b981" />
+        <Car position={[6, 0, 20]} color="#f59e0b" />
+      </group>
+
+      {/* ATTACHED WALKING TRACK */}
+      <group position={[-95, 0.05, 0]}>
+        <mesh rotation-x={-Math.PI / 2}>
+          <planeGeometry args={[8, 80]} />
+          <meshStandardMaterial color="#475569" />
+        </mesh>
+        {[...Array(16)].map((_, i) => (
+          <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.01, (i - 7.5) * 5]}>
+            <planeGeometry args={[6, 1]} />
             <meshStandardMaterial color="#94a3b8" />
           </mesh>
         ))}
-      </group>
-
-      {/* Security Area (Linear X: -10) */}
-      <group position={[-10, 0, 0]}>
-        <Html position={[0, 4, 0]} center distanceFactor={15}>
-          <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-200 shadow-xl whitespace-nowrap">
-            <p className="text-slate-900 font-black text-xs tracking-tighter uppercase">Security Screening</p>
-          </div>
-        </Html>
-        {[...Array(simParams.security_counters)].map((_, i) => (
-          <primitive 
-            key={i}
-            object={securityScene.clone()}
-            position={[0, 0, (i - (simParams.security_counters - 1) / 2) * 10]}
-            rotation={[0, 0, 0]}
-            scale={1.5}
-          />
-        ))}
-      </group>
-
-      {/* Flight Information Display - Near Check-In (X: -22) */}
-      <group position={[-22, 0, 0]}>
-        <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.4}>
-          <group position={[0, 7, 0]} rotation={[0, -Math.PI / 2, 0]}>
-             <mesh castShadow>
-               <boxGeometry args={[10, 6, 0.4]} />
-               <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.1} />
-             </mesh>
-             <mesh position={[0, 0, 0.21]}>
-               <planeGeometry args={[9.6, 5.6]} />
-               <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.2} />
-             </mesh>
-             <Html transform position={[0, 0, 0.22]} distanceFactor={6}>
-               <div className="w-[500px] h-[300px] bg-white p-6 font-sans text-slate-900 overflow-hidden rounded-md shadow-2xl flex flex-col border-4 border-slate-900">
-                 <div className="bg-slate-900 text-white px-4 py-2 flex justify-between items-center mb-4 rounded">
-                   <h1 className="text-lg font-black tracking-tight">FLIGHT BOARD</h1>
-                   <div className="text-sm font-mono text-amber-400">{metrics.timestamp}</div>
-                 </div>
-                 <div className="grid grid-cols-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b-2 border-slate-100 pb-2 mb-2 px-2">
-                   <span>Flight</span>
-                   <span>Destination</span>
-                   <span>Status</span>
-                   <span className="text-right">Time</span>
-                 </div>
-                 <div className="space-y-3 flex-1 overflow-hidden">
-                   {[...Array(4)].map((_, i) => {
-                     const isCurrent = i === 0;
-                     const status = isCurrent ? (isPlaneReady ? "BOARDING" : (metrics.latency > 25 ? "DELAYED" : "ON TIME")) : "SCHEDULED";
-                     const statusColor = status === "DELAYED" ? "text-rose-600" : (status === "BOARDING" ? "text-emerald-600" : "text-slate-400");
-                     return (
-                       <div key={i} className={`grid grid-cols-4 items-center text-sm font-bold px-2 py-2 rounded ${isCurrent ? "bg-amber-50 border-l-4 border-amber-400" : "border-b border-slate-50"}`}>
-                         <span className="font-mono">AI-{100 + i + Math.floor(metrics.activeFleet / 5)}</span>
-                         <span className="text-xs">{i % 2 === 0 ? "London LHR" : "Dubai DXB"}</span>
-                         <span className={`${statusColor} text-[10px] font-black`}>{status}</span>
-                         <span className="text-right text-xs font-mono">{i === 0 ? "NOW" : `+${(i + 1) * 15}m`}</span>
-                       </div>
-                     );
-                   })}
-                 </div>
-                 <div className="mt-4 pt-3 border-t-2 border-slate-900 flex justify-between items-center bg-slate-50 -mx-6 -mb-6 px-6 py-2">
-                   <div className="flex gap-4">
-                     <div className="flex flex-col">
-                       <span className="text-[8px] text-slate-400 uppercase">Load</span>
-                       <span className="text-xs font-black">{metrics.activeFleet} PAX</span>
-                     </div>
-                     <div className="flex flex-col">
-                       <span className="text-[8px] text-slate-400 uppercase">Counters</span>
-                       <span className="text-xs font-black text-blue-600">{simParams.security_counters}</span>
-                     </div>
-                   </div>
-                   <div className="flex flex-col items-end">
-                     <span className="text-[8px] text-slate-400 uppercase">AI Analytics</span>
-                     <span className={`text-xs font-black ${metrics.latency > 25 ? "text-rose-600" : "text-emerald-600"}`}>
-                       LATENCY: {Math.floor(metrics.latency)}m
-                     </span>
-                   </div>
-                 </div>
-               </div>
-             </Html>
-             <mesh position={[0, 3, 0]}>
-               <boxGeometry args={[0.2, 2, 0.2]} />
-               <meshStandardMaterial color="#334155" />
-             </mesh>
-          </group>
-        </Float>
-      </group>
-
-      {/* Waiting Hall Area (Linear X: 20) */}
-      <group position={[20, 0, 0]}>
-        <Html position={[0, 4, 0]} center distanceFactor={15}>
-          <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-200 shadow-xl whitespace-nowrap">
-            <p className="text-slate-900 font-black text-xs tracking-tighter uppercase">Waiting Lounge</p>
-          </div>
-        </Html>
-        <mesh position={[0, 2.5, -10]}>
-          <boxGeometry args={[14, 5, 0.2]} />
-          <meshStandardMaterial color="#cbd5e1" roughness={0.3} metalness={0.1} />
+        {/* Connector Path fully bridging to Entrance at X: -60 */}
+        <mesh rotation-x={-Math.PI / 2} position={[17.5, 0, 25]}>
+           <planeGeometry args={[35, 8]} />
+           <meshStandardMaterial color="#475569" />
         </mesh>
-        <mesh position={[0, 2.5, 10]}>
-          <boxGeometry args={[14, 5, 0.05]} />
-          <meshStandardMaterial color="#94a3b8" transparent opacity={0.3} />
+        <mesh rotation-x={-Math.PI / 2} position={[17.5, 0, -25]}>
+           <planeGeometry args={[35, 8]} />
+           <meshStandardMaterial color="#475569" />
         </mesh>
-        <group position={[-7, 2.5, 0]}>
-          <mesh position={[0, 1.5, 0]}> <boxGeometry args={[0.2, 2, 20]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[0, -1, -6]}> <boxGeometry args={[0.2, 3, 8]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[0, -1, 6]}> <boxGeometry args={[0.2, 3, 8]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[0.1, -1, 0]}> <planeGeometry args={[4, 3]} /> <meshStandardMaterial color="#38bdf8" transparent opacity={0.1} /> </mesh>
+      </group>
+
+      {/* --- 2. MAIN TERMINAL BUILDING --- */}
+      <mesh rotation-x={-Math.PI / 2} position={[-12.5, 0.1, 0]} receiveShadow>
+        <planeGeometry args={[95, 80]} />
+        <meshStandardMaterial color="#f1f5f9" />
+      </mesh>
+
+      <mesh position={[-12.5, 5, -40]}>
+        <boxGeometry args={[95, 10, 1.5]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+      </mesh>
+      <mesh position={[-12.5, 5, 40]}>
+        <boxGeometry args={[95, 10, 1.5]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+      </mesh>
+
+      {/* FRONT WALL WITH SEPARATE GATES */}
+      <group position={[-60, 5, 0]}>
+        {/* Main Concrete Sections - Re-centered to allow gaps exactly at Z: 25 and -25 */}
+        <mesh position={[0, 0, 0]}> 
+          <boxGeometry args={[1.5, 10, 35]} /> 
+          <meshStandardMaterial color="#cbd5e1" /> 
+        </mesh>
+        <mesh position={[0, 0, 36.25]}> 
+          <boxGeometry args={[1.5, 10, 7.5]} /> 
+          <meshStandardMaterial color="#cbd5e1" /> 
+        </mesh>
+        <mesh position={[0, 0, -36.25]}> 
+          <boxGeometry args={[1.5, 10, 7.5]} /> 
+          <meshStandardMaterial color="#cbd5e1" /> 
+        </mesh>
+        
+        {/* Gate Frames */}
+        <mesh position={[0, 4, 25]}> <boxGeometry args={[2, 2, 15]} /> <meshStandardMaterial color="#475569" /> </mesh>
+        <mesh position={[0, 4, -25]}> <boxGeometry args={[2, 2, 15]} /> <meshStandardMaterial color="#475569" /> </mesh>
+        
+        {/* Glass Doors - Sliding Open */}
+        {/* Domestic Gate Panels */}
+        <mesh position={[0, -1, 30]}> 
+          <boxGeometry args={[0.2, 8, 5]} /> 
+          <meshStandardMaterial color="#38bdf8" transparent opacity={0.3} /> 
+        </mesh>
+        <mesh position={[0, -1, 20]}> 
+          <boxGeometry args={[0.2, 8, 5]} /> 
+          <meshStandardMaterial color="#38bdf8" transparent opacity={0.3} /> 
+        </mesh>
+
+        {/* International Gate Panels */}
+        <mesh position={[0, -1, -30]}> 
+          <boxGeometry args={[0.2, 8, 5]} /> 
+          <meshStandardMaterial color="#38bdf8" transparent opacity={0.3} /> 
+        </mesh>
+        <mesh position={[0, -1, -20]}> 
+          <boxGeometry args={[0.2, 8, 5]} /> 
+          <meshStandardMaterial color="#38bdf8" transparent opacity={0.3} /> 
+        </mesh>
+
+        <Html position={[0, 6, 25]} center distanceFactor={12}>
+           <div className="bg-blue-600 text-white px-8 py-3 rounded-2xl border-4 border-white shadow-2xl font-black text-sm tracking-tighter uppercase">
+             Domestic Gate
+           </div>
+        </Html>
+        <Html position={[0, 6, -25]} center distanceFactor={12}>
+           <div className="bg-indigo-900 text-white px-8 py-3 rounded-2xl border-4 border-white shadow-2xl font-black text-sm tracking-tighter uppercase">
+             International Gate
+           </div>
+        </Html>
+      </group>
+
+      {/* ARCHITECTURAL ZONE SEPARATOR (Glass Top) */}
+      <group position={[-40, 8.5, 0]}>
+        <mesh>
+          <boxGeometry args={[10, 1, 80]} />
+          <meshStandardMaterial color="#38bdf8" transparent opacity={0.3} />
+        </mesh>
+      </group>
+
+      {/* DYNAMIC CHECK-IN ISLANDS */}
+      <group position={[-40, 0, 25]}>
+        <Html position={[0, 4.5, 0]} center distanceFactor={10}>
+          <div className="bg-blue-600 text-white px-3 py-1 rounded-full font-black text-[10px] border-2 border-white shadow-lg">DOMESTIC ZONE</div>
+        </Html>
+        {[...Array(domesticCount)].map((_, i) => {
+          const row = Math.floor(i / 5);
+          const col = i % 5;
+          const countInRow = Math.min(5, domesticCount - row * 5);
+          return (
+            <CheckInCounter 
+              key={`dom-${i}`} 
+              position={[row * -6, 0, (col - (countInRow - 1) / 2) * 6]} 
+              color="bg-blue-500" 
+              label={`D${i+1}`} 
+            />
+          );
+        })}
+      </group>
+
+      <group position={[-40, 0, -25]}>
+        <Html position={[0, 4.5, 0]} center distanceFactor={10}>
+          <div className="bg-indigo-800 text-white px-3 py-1 rounded-full font-black text-[10px] border-2 border-white shadow-lg">INTERNATIONAL ZONE</div>
+        </Html>
+        {[...Array(internationalCount)].map((_, i) => {
+          const row = Math.floor(i / 5);
+          const col = i % 5;
+          const countInRow = Math.min(5, internationalCount - row * 5);
+          return (
+            <CheckInCounter 
+              key={`intl-${i}`} 
+              position={[row * -6, 0, (col - (countInRow - 1) / 2) * 6]} 
+              color="bg-indigo-600" 
+              label={`I${i+1}`} 
+            />
+          );
+        })}
+      </group>
+
+      <group position={[-15, 0, 0]}>
+        {[...Array(simParams.security_counters)].map((_, i) => {
+          const maxPerRow = 6;
+          const row = Math.floor(i / maxPerRow);
+          const col = i % maxPerRow;
+          const countInRow = Math.min(maxPerRow, simParams.security_counters - row * maxPerRow);
+          return (
+            <CustomSecurityScanner 
+              key={i}
+              position={[row * -8, 0, (col - (countInRow - 1) / 2) * 12]}
+              isNight={isNight}
+            />
+          );
+        })}
+      </group>
+
+      <group position={[22, 0, 0]}>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
+          <planeGeometry args={[26, 76]} />
+          <meshStandardMaterial color="#e2e8f0" />
+        </mesh>
+
+        <group position={[-13, 4, 0]}>
+          <mesh position={[0, 0, -23.75]}> <boxGeometry args={[0.5, 8, 32.5]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
+          <mesh position={[0, 0, 23.75]}> <boxGeometry args={[0.5, 8, 32.5]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
+          <mesh position={[0, 3, 0]}> <boxGeometry args={[0.5, 2, 15]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
+          <Html position={[0.3, 1, 0]} center distanceFactor={10}>
+             <div className="bg-indigo-600 text-white px-2 py-1 rounded font-black text-[8px] animate-pulse">LOUNGE ENTRANCE</div>
+          </Html>
         </group>
-        <group position={[7, 2.5, 0]}>
-          <mesh position={[0, 1.5, 0]}> <boxGeometry args={[0.2, 2, 20]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[0, -1, -6]}> <boxGeometry args={[0.2, 3, 8]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[0, -1, 6]}> <boxGeometry args={[0.2, 3, 8]} /> <meshStandardMaterial color="#cbd5e1" /> </mesh>
-          <mesh position={[-0.1, -1, 0]}> <planeGeometry args={[4, 3]} /> <meshStandardMaterial color="#38bdf8" transparent opacity={0.1} /> </mesh>
+
+        <group position={[13, 4, 0]}>
+          <mesh position={[0, 0, -24]}> <boxGeometry args={[0.5, 8, 32]} /> <meshStandardMaterial color="#38bdf8" transparent opacity={0.1} /> </mesh>
+          <mesh position={[0, 0, 24]}> <boxGeometry args={[0.5, 8, 32]} /> <meshStandardMaterial color="#38bdf8" transparent opacity={0.1} /> </mesh>
+          <mesh position={[0, 3, 0]}> <boxGeometry args={[0.5, 2, 16]} /> <meshStandardMaterial color="#38bdf8" transparent opacity={0.1} /> </mesh>
+          <Html position={[0.5, 1, 0]} center distanceFactor={10}>
+             <div className="bg-emerald-600 text-white px-4 py-1 rounded-full font-black text-[10px] border-2 border-white shadow-xl">
+               BOARDING GATE
+             </div>
+          </Html>
         </group>
-        {[...Array(2)].map((_, row) => (
-          <group key={row} position={[(row - 0.5) * 6, 0, 0]}>
-            {[...Array(5)].map((_, i) => (
-              <mesh key={i} position={[0, 0.25, (i - 2) * 3]} castShadow>
-                <boxGeometry args={[1.5, 0.5, 1.2]} />
-                <meshStandardMaterial color="#334155" />
-                <mesh position={[row === 0 ? -0.7 : 0.7, 0.6, 0]}>
-                  <boxGeometry args={[0.15, 1.2, 1.2]} />
+
+        {[...Array(3)].map((_, row) => (
+          <group key={row} position={[(row - 1) * 6, 0.1, 0]}>
+            {[...Array(6)].map((_, i) => (
+              <mesh key={i} position={[0, 0.25, (i - 2.5) * 6]} castShadow>
+                <boxGeometry args={[2, 0.5, 2]} />
+                <meshStandardMaterial color="#1e293b" />
+                <mesh position={[row % 2 === 0 ? -0.8 : 0.8, 0.6, 0]}>
+                  <boxGeometry args={[0.15, 1.2, 2]} />
                   <meshStandardMaterial color="#475569" />
                 </mesh>
               </mesh>
@@ -163,24 +594,11 @@ const Infrastructure = () => {
         ))}
       </group>
 
-      {/* Boarding Gate (Linear X: 40) */}
-      <group position={[40, 0, 0]}>
-        <mesh position={[0, 2, 0]}>
-          <boxGeometry args={[1, 4, 6]} />
-          <meshStandardMaterial color="#cbd5e1" transparent opacity={0.3} />
-        </mesh>
-      </group>
-
-      {/* Runway Area (Linear X: 55) */}
-      <group position={[55, 0, 0]}>
-        <primitive object={runwayScene.clone()} scale={[0.1, 0.1, 0.2]} rotation={[0, Math.PI / 2, 0]} />
-      </group>
-
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
-      <spotLight position={[-10, 20, 10]} angle={0.15} penumbra={1} intensity={2} castShadow />
+      <CustomRunway position={[70, 0, 0]} isNight={isNight} />
     </group>
   );
 };
+
+useGLTF.preload('/models/tree.glb');
 
 export default Infrastructure;

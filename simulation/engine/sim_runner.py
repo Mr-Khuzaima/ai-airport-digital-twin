@@ -132,15 +132,18 @@ class Airport:
         passenger.timestamps['security_start'] = self.env.now
         with self.security.request() as req:
             yield req
-            # Random processing time (5-12 mins)
-            yield self.env.timeout(random.uniform(5, 12))
+            # Random processing time (5-12 mins) + weather impact
+            weather_impact = self.config.get('weather_severity', 0) / 10.0
+            yield self.env.timeout(random.uniform(5, 12) + weather_impact)
             passenger.timestamps['security_end'] = self.env.now
 
         # Stage 3: Boarding
         passenger.timestamps['boarding_start'] = self.env.now
         with self.boarding.request() as req:
             yield req
-            yield self.env.timeout(random.uniform(1, 3))
+            # Weather can also slow down boarding
+            weather_impact = self.config.get('weather_severity', 0) / 20.0
+            yield self.env.timeout(random.uniform(1, 3) + weather_impact)
             passenger.timestamps['boarding_end'] = self.env.now
 
         # Stage 4: Satisfaction Update (ML Call)
@@ -180,7 +183,7 @@ def sim_runner(config: Dict):
                 'rush_hour': 1, 'is_weekend': 0, 'congestion_score': 0.5
             }
             predicted_delay = ml.predict_flight_delay(base_delay_features)
-            final_delay = predicted_delay + config.get('delay_offset_minutes', 0)
+            final_delay = predicted_delay + config.get('delay_offset_minutes', 0) + config.get('weather_severity', 0) * 0.5
             
             flight = Flight(f"FL-{i}", env.now, final_delay)
             airport.flights.append(flight)

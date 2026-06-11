@@ -17,8 +17,9 @@ const ControlSliders: React.FC<{
   const sliders = [
     { key: 'increase_flights_percent', label: 'Flight Traffic Increase', min: 0, max: 100, step: 5, suffix: '%' },
     { key: 'security_counters', label: 'Active Security Lanes', min: 1, max: 20, step: 1, suffix: '' },
-    { key: 'delay_offset_minutes', label: 'Injected Delay Offset', min: 0, max: 60, step: 5, suffix: 'm' },
     { key: 'checkin_counters', label: 'Check-in Counters', min: 1, max: 30, step: 1, suffix: '' },
+    { key: 'weather_severity', label: 'Weather Severity', min: 0, max: 100, step: 10, suffix: '%' },
+    { key: 'delay_offset_minutes', label: 'Injected Delay Offset', min: 0, max: 60, step: 5, suffix: 'm' },
   ];
 
   const handleChange = (key: string, value: number) => {

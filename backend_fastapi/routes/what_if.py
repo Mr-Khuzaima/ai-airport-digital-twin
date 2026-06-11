@@ -10,6 +10,7 @@ class WhatIfRequest(BaseModel):
     security_counters: int = 5
     delay_offset_minutes: float = 0
     checkin_counters: int = 10
+    weather_severity: float = 0
 
 @router.post("/run")
 async def run_what_if(data: WhatIfRequest):
