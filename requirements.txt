@@ -1,21 +1,21 @@
-# Core Data Processing (Latest versions for Python 3.13 compatibility)
-pandas
-numpy
-scikit-learn
+# Core Data Processing
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
 
 # Machine Learning
-xgboost
-tensorflow
-joblib
+xgboost==2.0.3
+tensorflow-cpu==2.16.1
+joblib==1.4.2
 
 # Simulation
-simpy
+simpy==4.1.1
 
 # Backend & API
-fastapi
-uvicorn
+fastapi==0.111.0
+uvicorn==0.30.1
 
 # Visualization & EDA
-matplotlib
-seaborn
-plotly
+matplotlib==3.9.0
+seaborn==0.13.2
+plotly==5.22.0
