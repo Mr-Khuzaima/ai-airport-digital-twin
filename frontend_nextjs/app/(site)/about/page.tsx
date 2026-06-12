@@ -51,7 +51,7 @@ export default function AboutPage() {
           </div>
           <div className="space-y-6 text-slate-500 font-medium leading-relaxed">
             <p>
-              The original brief provided in <span className="text-slate-900 font-bold italic">Project Instructions</span> 
+              The original brief provided in <span className="text-slate-900 font-bold italic">Project Instructions </span> 
               challenged us to design an end-to-end N-tier system capable of simulating complex airport dynamics. 
               The requirements emphasized:
             </p>
