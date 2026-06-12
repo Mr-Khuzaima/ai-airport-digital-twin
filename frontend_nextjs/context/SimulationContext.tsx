@@ -396,19 +396,21 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   const runScenario = async (params: any) => {
     setIsResetting(true);
+    
+    // Update local simulation params immediately for responsiveness
+    setSimParams({
+      increase_flights_percent: params.increase_flights_percent,
+      security_counters: params.security_counters,
+      checkin_counters: params.checkin_counters || 4,
+      delay_offset_minutes: params.delay_offset_minutes,
+      weather_severity: params.weather_severity || 0,
+      security_tech_level: params.security_tech_level || 'standard',
+      time_of_day: params.time_of_day ?? 12
+    });
+
     try {
       const res = await apiService.runWhatIf(params);
       
-      setSimParams({
-        increase_flights_percent: params.increase_flights_percent,
-        security_counters: params.security_counters,
-        checkin_counters: params.checkin_counters || 4,
-        delay_offset_minutes: params.delay_offset_minutes,
-        weather_severity: params.weather_severity || 0,
-        security_tech_level: params.security_tech_level || 'standard',
-        time_of_day: params.time_of_day ?? 12 // Ensure time_of_day is updated
-      });
-
       if (res && res.metrics) {
         const m = res.metrics;
         setMetrics(prev => ({
@@ -416,10 +418,12 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
           satisfaction: parseFloat((m.avg_satisfaction * 100).toFixed(1)),
         }));
         setLogs(prev => [`[WHAT-IF] AI Analysis complete: ${res.message}`, ...prev]);
+      } else if (res && res.error) {
+        setLogs(prev => [`[BACKEND ERROR] ${res.error}`, ...prev]);
       }
     } catch (error) {
-      console.error(error);
-      setLogs(prev => [`[ERROR] What-If connection failed.`, ...prev]);
+      console.error("What-If Analysis failed:", error);
+      setLogs(prev => [`[CONNECTION ERROR] Failed to reach simulation engine. Using local fallback.`, ...prev]);
     } finally {
       setIsResetting(false);
     }

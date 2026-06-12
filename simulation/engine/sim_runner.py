@@ -200,6 +200,9 @@ def sim_runner(config: Dict):
     env.run(until=config.get('sim_duration', 480)) # Default 8 hours
 
     # Summary Statistics and Time-Series Data
+    avg_sat = np.mean([p.satisfaction for p in airport.completed_passengers]) if airport.completed_passengers else 0.8
+    max_sec_queue = airport.security.max_queue_length
+
     time_series = []
     for t in range(0, config.get('sim_duration', 480) + 1, 15):
         # Sample snapshots of the simulation at intervals
