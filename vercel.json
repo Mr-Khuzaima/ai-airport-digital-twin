@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend_nextjs && npm install && npm run build",
+  "installCommand": "cd frontend_nextjs && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "frontend_nextjs/.next",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "backend_fastapi/main.py"
+    }
+  ]
+}
