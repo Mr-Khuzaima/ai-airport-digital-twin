@@ -27,6 +27,7 @@ interface ChartPoint {
   waitTimes: { range: string; count: number }[];
   latency: number;
   delayOffset: number;
+  scatterX: number;
 }
 
 interface SimulationParams {
