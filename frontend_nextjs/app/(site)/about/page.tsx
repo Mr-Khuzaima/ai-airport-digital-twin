@@ -1,7 +1,28 @@
+"use client";
+
 import React from 'react';
-import { ShieldCheck, BookOpen, Target, Award } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  BookOpen, 
+  Target, 
+  Award, 
+  GitBranch, 
+  Calendar, 
+  Users as UsersIcon, 
+  History,
+  Terminal
+} from 'lucide-react';
+import { 
+  RadialBarChart, 
+  RadialBar, 
+  ResponsiveContainer, 
+  PolarAngleAxis 
+} from 'recharts';
+import { useSimulation } from '@/context/SimulationContext';
 
 export default function AboutPage() {
+  const { repoStats } = useSimulation();
+
   return (
     <div className="space-y-24 max-w-6xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Page Header */}
@@ -30,7 +51,7 @@ export default function AboutPage() {
           </div>
           <div className="space-y-6 text-slate-500 font-medium leading-relaxed">
             <p>
-              The original brief provided in <span className="text-slate-900 font-bold italic">Project Instructions.jpeg</span> 
+              The original brief provided in <span className="text-slate-900 font-bold italic">Project Instructions</span> 
               challenged us to design an end-to-end N-tier system capable of simulating complex airport dynamics. 
               The requirements emphasized:
             </p>
@@ -93,6 +114,117 @@ export default function AboutPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Repository Engineering Analytics */}
+      <section className="space-y-16">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-widest">
+            Source Control Metrics
+          </div>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tight">Repository Engineering</h2>
+          <p className="text-slate-500 font-medium">Empirical proof of development velocity and version control discipline.</p>
+        </div>
+
+        <div className="bg-white border border-slate-100 p-10 md:p-14 rounded-[4rem] shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/5 rounded-full -mr-48 -mt-48 blur-3xl pointer-events-none" />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center relative z-10">
+            {/* Stats Column */}
+            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 group-hover:bg-white transition-colors duration-500">
+                <div className="flex items-center gap-3 text-brand-600">
+                  <Terminal className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Repository Identity</span>
+                </div>
+                <h4 className="text-lg font-black text-slate-900 break-all leading-tight">
+                  {repoStats?.repo_name || 'ai-airport-digital-twin'}
+                </h4>
+              </div>
+
+              <div className="space-y-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 group-hover:bg-white transition-colors duration-500">
+                <div className="flex items-center gap-3 text-blue-600">
+                  <Calendar className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Project Inception</span>
+                </div>
+                <h4 className="text-xl font-black text-slate-900">
+                  {repoStats?.creation_date || '2026-06-06'}
+                </h4>
+              </div>
+
+              <div className="space-y-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 group-hover:bg-white transition-colors duration-500 sm:col-span-2">
+                <div className="flex items-center gap-3 text-emerald-600">
+                  <UsersIcon className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Project Contributors</span>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {repoStats?.contributors_list?.map((name, i) => (
+                    <span key={i} className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-sm font-black text-slate-700 shadow-sm">
+                      {name}
+                    </span>
+                  )) || (
+                    <span className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-sm font-black text-slate-700 shadow-sm animate-pulse">
+                      Detecting Contributors...
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 group-hover:bg-white transition-colors duration-500">
+                <div className="flex items-center gap-3 text-rose-600">
+                  <GitBranch className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Development Depth</span>
+                </div>
+                <h4 className="text-2xl font-black text-slate-900">
+                  {repoStats?.total_commits || 0} Total Commits
+                </h4>
+              </div>
+            </div>
+
+            {/* Gauge Column */}
+            <div className="flex flex-col items-center justify-center p-10 bg-slate-950 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden">
+               <div className="absolute inset-0 bg-brand-600/10 blur-[100px] pointer-events-none" />
+               
+               <div className="w-full h-48 relative">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <RadialBarChart 
+                     cx="50%" 
+                     cy="50%" 
+                     innerRadius="80%" 
+                     outerRadius="100%" 
+                     barSize={20} 
+                     data={[{ value: repoStats?.total_commits || 0 }]} 
+                     startAngle={180} 
+                     endAngle={0}
+                   >
+                     <PolarAngleAxis
+                       type="number"
+                       domain={[0, Math.max(100, (repoStats?.total_commits || 0) * 1.2)]}
+                       angleAxisId={0}
+                       tick={false}
+                     />
+                     <RadialBar
+                       background
+                       dataKey="value"
+                       cornerRadius={10}
+                       fill="#8b5cf6"
+                     />
+                   </RadialBarChart>
+                 </ResponsiveContainer>
+                 <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                    <History className="w-6 h-6 text-brand-400 mb-1" />
+                    <span className="text-4xl font-black text-white tracking-tighter">
+                      {repoStats?.total_commits || 0}
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">COMMITS</span>
+                 </div>
+               </div>
+               <p className="text-slate-400 text-[10px] font-bold text-center uppercase tracking-widest mt-4">
+                 Development Velocity
+               </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>

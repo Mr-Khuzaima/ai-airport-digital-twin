@@ -35,4 +35,10 @@ export const apiService = {
     const response = await apiClient.post('/whatif/run', params);
     return response.data;
   },
+
+  // Repo Stats
+  getRepoStats: async () => {
+    const response = await apiClient.get('/repo/stats');
+    return response.data;
+  }
 };

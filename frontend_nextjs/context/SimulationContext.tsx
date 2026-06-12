@@ -52,7 +52,6 @@ interface PassengerAgent {
   slotIndex: number;
   lastStageTime: number;
 }
-
 interface SimulationAlert {
   id: string;
   type: 'risk' | 'bottleneck' | 'suggestion' | 'info';
@@ -63,13 +62,24 @@ interface SimulationAlert {
   read: boolean;
 }
 
+interface RepoStats {
+  repo_name: string;
+  creation_date: string;
+  total_commits: number;
+  contributors_list: string[];
+  status: string;
+}
+
 interface SimulationContextType {
   metrics: SimulationMetrics;
   history: ChartPoint[];
   logs: string[];
   alerts: SimulationAlert[];
+  repoStats: RepoStats | null;
   activeAdvice: SimulationAlert | null;
   congestion: CongestionNode[];
+// ... rest of interface
+
   passengers: PassengerAgent[];
   activeStage: number;
   simType: 'international' | 'domestic';
@@ -100,6 +110,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaneReady, setIsPlaneReady] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
   const [alerts, setAlerts] = useState<SimulationAlert[]>([]);
+  const [repoStats, setRepoStats] = useState<RepoStats | null>(null);
   const [activeAdvice, setActiveAdvice] = useState<SimulationAlert | null>(null);
   const [history, setHistory] = useState<ChartPoint[]>([]);
   const [passengers, setPassengers] = useState<PassengerAgent[]>([]);
@@ -146,6 +157,19 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setHasMounted(true);
     setMetrics(prev => ({ ...prev, timestamp: new Date().toLocaleTimeString() }));
+
+    // Fetch Repo Stats once on mount
+    const fetchStats = async () => {
+      try {
+        const stats = await apiService.getRepoStats();
+        if (stats && !stats.error) {
+          setRepoStats(stats);
+        }
+      } catch (e) {
+        console.error("Failed to fetch repo stats", e);
+      }
+    };
+    fetchStats();
   }, []);
 
   // Main Simulation & History Loop (Stable)
@@ -402,7 +426,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SimulationContext.Provider value={{
-      metrics, history, logs, alerts, activeAdvice, congestion, passengers, activeStage, simType, isFlying, isPlaneReady, isPlaying, isResetting, hasMounted, simParams,
+      metrics, history, logs, alerts, repoStats, activeAdvice, congestion, passengers, activeStage, simType, isFlying, isPlaneReady, isPlaying, isResetting, hasMounted, simParams,
       setSimParams, setSimType, setIsPlaying, markAlertAsRead, clearAlerts, resetEnvironment, runScenario
     }}>
       {children}

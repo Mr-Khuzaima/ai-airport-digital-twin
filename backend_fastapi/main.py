@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend_fastapi.routes import simulate, ml_predict, what_if
+from backend_fastapi.routes import simulate, ml_predict, what_if, repo_stats
 
 app = FastAPI(
     title="AI Airport Digital Twin API",
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(simulate.router, prefix="/simulate", tags=["Simulation"])
 app.include_router(ml_predict.router, prefix="/predict", tags=["ML Predictions"])
 app.include_router(what_if.router, prefix="/whatif", tags=["What-If Analysis"])
+app.include_router(repo_stats.router, prefix="/repo", tags=["Repository Stats"])
 
 @app.get("/")
 async def root():
