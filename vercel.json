@@ -1,13 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend_nextjs && npm install && npm run build",
-  "installCommand": "cd frontend_nextjs && npm install",
   "framework": "nextjs",
-  "outputDirectory": "frontend_nextjs/.next",
+  "rootDirectory": "frontend_nextjs",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "backend_fastapi/main.py"
+      "destination": "https://your-render-api-url.com/$1"
     }
   ]
 }
