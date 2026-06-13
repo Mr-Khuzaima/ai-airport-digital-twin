@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://your-render-api-url.com/$1"
+      "destination": "https://ai-airport-digital-twin.onrender.com/$1"
     }
   ]
 }

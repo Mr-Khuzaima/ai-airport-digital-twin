@@ -8,10 +8,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+import os
+
 # Enable CORS for Next.js frontend
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "https://ai-airport-digital-twin-1ug5.vercel.app").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
