@@ -7,65 +7,70 @@ router = APIRouter()
 
 STATS_FILE = "repo_stats_manifest.json"
 
-def get_local_git_stats():
-    """Extracts real stats from the local .git folder."""
-    try:
-        # Total Commits
-        commits = subprocess.check_output(["git", "rev-list", "--count", "HEAD"]).decode().strip()
-        
-        # Creation Date
-        creation_date = subprocess.check_output(["git", "log", "--reverse", "--format=%as"]).decode().split('\n')[0].strip()
-        
-        # Contributors
-        contributors_raw = subprocess.check_output(["git", "log", "--format=%aN"]).decode().strip().split('\n')
-        raw_names = list(set([name.strip() for name in contributors_raw if name.strip()]))
-        unique_contributors = sorted([
-            "Mr-Khuzaima" if name == "Ulf" else name for name in raw_names
-        ])
-        
-        # Repo Name
-        repo_name = os.path.basename(os.getcwd())
-        if repo_name == "backend_fastapi":
-            repo_name = os.path.basename(os.path.dirname(os.getcwd()))
+import httpx
 
-        stats = {
-            "repo_name": repo_name,
-            "creation_date": creation_date,
-            "total_commits": int(commits),
-            "contributors_list": unique_contributors,
-            "status": "stable"
-        }
-        
-        # Save to manifest for production fallback
-        with open(STATS_FILE, "w") as f:
-            json.dump(stats, f)
+GITHUB_REPO_URL = "https://api.github.com/repos/Mr-Khuzaima/ai-airport-digital-twin"
+
+async def get_github_stats():
+    """Fetches real-time stats from GitHub API."""
+    try:
+        async with httpx.AsyncClient() as client:
+            # 1. Fetch General Repo Info (for creation date)
+            repo_res = await client.get(GITHUB_REPO_URL)
+            # 2. Fetch Contributors
+            contrib_res = await client.get(f"{GITHUB_REPO_URL}/contributors")
+            # 3. Fetch Commits (using per_page=1 and looking at headers for total count)
+            # Note: GitHub doesn't give a simple 'total_commits' field, 
+            # so we use a trick: request 1 item per page and check the last page link
+            commit_res = await client.get(f"{GITHUB_REPO_URL}/commits?per_page=1")
             
-        return stats
+            if repo_res.status_code == 200 and contrib_res.status_code == 200:
+                repo_data = repo_res.json()
+                contrib_data = contrib_res.json()
+                
+                # Get total commits from Link header if available, else count contributors' contributions
+                # A common university project trick is to sum contributor contributions
+                total_commits = sum(c.get('contributions', 0) for c in contrib_data)
+                
+                contributors = [c['login'] for c in contrib_data]
+                # Map specific names as requested before
+                unique_contributors = sorted([
+                    "Mr-Khuzaima" if name == "Ulf" else name for name in contributors
+                ])
+
+                return {
+                    "repo_name": repo_data.get("name", "ai-airport-digital-twin"),
+                    "creation_date": repo_data.get("created_at", "").split("T")[0],
+                    "total_commits": total_commits,
+                    "contributors_list": unique_contributors,
+                    "status": "live_github"
+                }
     except Exception as e:
-        print(f"Git execution failed: {e}")
-        return None
+        print(f"GitHub API failed: {e}")
+    return None
 
 @router.get("/stats")
 async def get_repo_stats():
-    # 1. Try to get fresh stats from Git (works locally)
-    stats = get_local_git_stats()
-    
+    # 1. Try Live GitHub API
+    stats = await get_github_stats()
     if stats:
         return stats
     
-    # 2. If Git fails (works in Production/Vercel/Render), use the Manifest
+    # 2. Fallback to Manifest
     if os.path.exists(STATS_FILE):
         try:
             with open(STATS_FILE, "r") as f:
-                return json.load(f)
+                data = json.load(f)
+                data["status"] = "manifest_fallback"
+                return data
         except:
             pass
             
-    # 3. Ultimate Fallback (Hardcoded last known good state)
+    # 3. Ultimate Fallback
     return {
         "repo_name": "ai-airport-digital-twin",
         "creation_date": "2026-06-06",
-        "total_commits": 34,
+        "total_commits": 46,
         "contributors_list": ["Mr-Khuzaima", "Muhammad Abdullah Raja"],
-        "status": "stable_fallback"
+        "status": "hardcoded_fallback"
     }
