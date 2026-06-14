@@ -53,13 +53,21 @@ class MLService:
                 # In production, this would be historical data from the database
                 dummy_input = np.zeros((1, 12, 1))
                 scaled_pred = self.traffic_model.predict(dummy_input, verbose=0)
-                pax_count = self.traffic_scaler.inverse_transform(scaled_pred)[0][0]
-                return int(max(pax_count, 100)) # Floor at 100 for simulation viability
+                raw_pax_count = self.traffic_scaler.inverse_transform(scaled_pred)[0][0]
+                
+                # SCALING FACTOR: Translates real-world millions-scale data to simulation-scale agents.
+                # Average training volume is ~3M/month. Simulation baseline is ~20 agents.
+                # Scaling factor = 20 / 3,000,000 = 0.00000667
+                scaling_factor = 0.00000667
+                pax_count = int(raw_pax_count * scaling_factor)
+                
+                logger.info(f"LSTM Forecast: Raw={raw_pax_count:.0f} | Scaled={pax_count}")
+                return max(pax_count, 1) # Minimum 1 for simulation continuity
             except Exception as e:
                 logger.error(f"Error running LSTM prediction: {e}. Using fallback load.")
         
         # Fallback normal distribution for passenger count
-        return int(random.normalvariate(150, 30))
+        return int(random.normalvariate(20, 5))
 
 class Passenger:
     """Agent representing a traveler with state and satisfaction tracking."""

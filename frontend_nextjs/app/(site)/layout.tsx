@@ -135,7 +135,7 @@ export default function SiteLayout({
           </p>
 
           <div className="flex items-center gap-6">
-            <a href="#" className="p-2 text-slate-400 hover:text-brand-600 transition-colors">
+            <a href="https://github.com/Mr-Khuzaima/ai-airport-digital-twin" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:text-brand-600 transition-colors">
               <Github className="w-6 h-6" />
             </a>
           </div>
