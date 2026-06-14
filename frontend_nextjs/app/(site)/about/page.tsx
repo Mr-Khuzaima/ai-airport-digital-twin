@@ -72,15 +72,23 @@ export default function AboutPage() {
           </div>
         </div>
         
-        <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden h-[450px] flex flex-col justify-end group border border-slate-800">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full -mr-32 -mt-32 blur-[80px] group-hover:scale-110 transition-transform duration-700" />
-          <div className="relative z-10 space-y-6">
+        <div className="bg-slate-900 rounded-[3rem] text-white relative overflow-hidden h-[450px] flex flex-col justify-end group border border-slate-800 shadow-2xl">
+          {/* Background Image with Overlay */}
+          <div 
+            className="absolute inset-0 z-0 opacity-50 bg-cover bg-center transition-transform duration-[10000ms] group-hover:scale-110"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542296332-2e4473faf563?q=80&w=2070&auto=format&fit=crop')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-0" />
+          
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full -mr-32 -mt-32 blur-[80px] group-hover:scale-110 transition-transform duration-700 z-0" />
+          
+          <div className="relative z-10 space-y-6 p-12">
             <div className="p-4 bg-white/10 w-fit rounded-2xl backdrop-blur-md">
               <Award className="w-8 h-8 text-brand-400" />
             </div>
             <div>
               <h3 className="font-black text-2xl mb-2 tracking-tight">Digital Twin Vision</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-medium">
+              <p className="text-slate-200 text-sm leading-relaxed font-medium">
                 The objective was to create a "Live Twin"—a system that doesn't just show data, but actively participates 
                 in airport management through synchronized AI suggestions and predictive analytics.
               </p>

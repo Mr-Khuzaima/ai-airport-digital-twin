@@ -16,10 +16,19 @@ export default function HomePage() {
   return (
     <div className="space-y-24 md:space-y-32 pb-20 animate-in fade-in duration-1000">
       {/* Hero Section */}
-      <section className="relative rounded-[3.5rem] overflow-hidden bg-slate-950 px-6 py-20 md:py-32 text-white border border-slate-800 shadow-3xl">
+      <section className="relative rounded-[3.5rem] overflow-hidden px-6 py-20 md:py-32 text-white border border-slate-800 shadow-3xl min-h-[600px] flex items-center bg-slate-950">
+        {/* Cinematic Background Layer */}
+        <div 
+          className="absolute inset-0 z-0 opacity-70 bg-cover bg-center animate-subtle-zoom"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?q=80&w=2070&auto=format&fit=crop')" }}
+        />
+        
+        {/* Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-slate-950/20 z-0" />
+        
         {/* Animated glowing backgrounds */}
-        <div className="absolute top-0 right-0 w-[50rem] h-[50rem] bg-brand-600/20 rounded-full -mr-48 -mt-48 blur-[150px] pointer-events-none animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-indigo-600/10 rounded-full -ml-40 -mb-40 blur-[120px] pointer-events-none animate-pulse delay-700" />
+        <div className="absolute top-0 right-0 w-[50rem] h-[50rem] bg-brand-600/20 rounded-full -mr-48 -mt-48 blur-[150px] pointer-events-none animate-pulse z-0" />
+        <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-indigo-600/10 rounded-full -ml-40 -mb-40 blur-[120px] pointer-events-none animate-pulse delay-700 z-0" />
         
         <div className="max-w-5xl mx-auto text-center space-y-10 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500/10 border border-brand-500/20 text-brand-300 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">

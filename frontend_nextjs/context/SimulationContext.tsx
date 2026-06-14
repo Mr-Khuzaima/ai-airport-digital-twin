@@ -251,7 +251,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
             eventRate: Math.floor((currentPax.length / 10) * (2 + Math.random())),
           };
 
-          // AI Advisor Live Synchronization Logic
+          // AI Advisor Live Synchronization Logic: DYNAMIC THRESHOLDS
+          const checkInCapacity = simParams.checkin_counters * 8; // Each counter comfortably handles 8 pax
+          const dynamicSecurityCapacity = simParams.security_counters * 6; // Security is slower, handles 6 pax per lane
+          
           const checkInCount = currentPax.filter(p => p.stage === 1).length;
           const securityCount = currentPax.filter(p => p.stage === 2).length;
           const boardingCount = currentPax.filter(p => p.stage === 4 || p.stage === 5).length;
@@ -259,23 +262,24 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
           const newAlerts: SimulationAlert[] = [];
           let currentLiveAdvice: SimulationAlert | null = null;
 
-          if (checkInCount > 25) {
+          // AI Logic: Trigger only when count exceeds DYNAMIC capacity
+          if (checkInCount > checkInCapacity) {
             currentLiveAdvice = {
               id: `live-ci-${Date.now()}`,
               type: 'bottleneck',
               title: 'Check-In Congestion',
-              message: `Queue at Check-In has reached ${checkInCount} passengers.`,
-              suggestion: 'Increase Check-In counters by 2 to distribute the load.',
+              message: `Queue at Check-In has reached ${checkInCount} passengers, exceeding current capacity of ${checkInCapacity}.`,
+              suggestion: 'Increase Check-In counters to distribute the load.',
               timestamp: timeStr,
               read: false
             };
             newAlerts.push(currentLiveAdvice);
-          } else if (securityCount > 15) {
+          } else if (securityCount > dynamicSecurityCapacity) {
             currentLiveAdvice = {
               id: `live-sec-${Date.now()}`,
               type: 'risk',
               title: 'Security Bottleneck',
-              message: `High density detected at Security Scanners (${securityCount} pax).`,
+              message: `High density detected at Security Scanners (${securityCount} pax), exceeding lane capacity of ${dynamicSecurityCapacity}.`,
               suggestion: 'Deploy Advanced Imaging technology or open an extra security lane.',
               timestamp: timeStr,
               read: false

@@ -30,6 +30,19 @@ const ControlPanel = () => {
     runScenario(localParams);
   };
 
+  const handleReset = () => {
+    const defaults = {
+      increase_flights_percent: 0,
+      security_counters: 5,
+      checkin_counters: 4,
+      delay_offset_minutes: 0,
+      weather_severity: 0,
+      time_of_day: 12,
+    };
+    setLocalParams(defaults);
+    runScenario(defaults);
+  };
+
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
       <div className="flex items-center gap-4">
@@ -43,6 +56,7 @@ const ControlPanel = () => {
       </div>
 
       <div className="space-y-6">
+        {/* ... (previous inputs unchanged) */}
         {/* Time of Day Modes */}
         <div className="space-y-3">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Environment Mode</label>
@@ -150,14 +164,25 @@ const ControlPanel = () => {
         </div>
       </div>
 
-      <button
-        onClick={handleExecute}
-        disabled={isResetting}
-        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-brand-600 hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl"
-      >
-        {isResetting ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-        {isResetting ? 'Processing...' : 'Apply Scenario'}
-      </button>
+      <div className="grid grid-cols-1 gap-3">
+        <button
+          onClick={handleExecute}
+          disabled={isResetting}
+          className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-brand-600 hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl"
+        >
+          {isResetting ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+          {isResetting ? 'Processing...' : 'Apply Scenario'}
+        </button>
+
+        <button
+          onClick={handleReset}
+          disabled={isResetting}
+          className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reset Parameters
+        </button>
+      </div>
     </div>
   );
 };

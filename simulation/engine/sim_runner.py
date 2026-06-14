@@ -55,8 +55,8 @@ class MLService:
                 scaled_pred = self.traffic_model.predict(dummy_input, verbose=0)
                 raw_pax_count = self.traffic_scaler.inverse_transform(scaled_pred)[0][0]
                 
-                # SCALING FACTOR: Translates real-world millions-scale data to simulation-scale agents.
-                # Average training volume is ~3M/month. Simulation baseline is ~20 agents.
+                # SCALING FACTOR: Translates real-world millions-scale data to simulation-scale passengers.
+                # Average training volume is ~3M/month. Simulation baseline is ~20 passengers.
                 # Scaling factor = 20 / 3,000,000 = 0.00000667
                 scaling_factor = 0.00000667
                 pax_count = int(raw_pax_count * scaling_factor)
@@ -70,7 +70,7 @@ class MLService:
         return int(random.normalvariate(20, 5))
 
 class Passenger:
-    """Agent representing a traveler with state and satisfaction tracking."""
+    """Passenger representing a traveler with state and satisfaction tracking."""
     def __init__(self, p_id: str, flight: 'Flight'):
         self.p_id = p_id
         self.flight = flight
