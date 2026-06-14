@@ -21,17 +21,17 @@ const AIAdvisorPanel = () => {
       const checkInCount = (passengers || []).filter(p => p.stage === 1).length;
       const securityCount = (passengers || []).filter(p => p.stage === 2).length;
       
-      const newLogs = [
-        { msg: `[${now}] PULLING TELEMETRY: Active Passengers: ${passengers?.length || 0}, Latency: ${metrics.latency}ms`, type: 'inference' as const },
-        { msg: `[${now}] XGBOOST INFERENCE: Analyzing Satisfaction Curve (Input: WaitTime=${(metrics.latency/10).toFixed(1)}m, Congestion=${Math.round(checkInCount+securityCount)})`, type: 'model' as const },
-        { msg: `[${now}] LSTM FORECAST: Predicted Traffic Load @ ${simParams.increase_flights_percent}% Growth -> Result: ${Math.round((passengers?.length || 0) * (1 + simParams.increase_flights_percent/100))} pax/hr`, type: 'model' as const },
+      const newLogs: {msg: string, type: LogType}[] = [
+        { msg: `[${now}] PULLING TELEMETRY: Active Passengers: ${passengers?.length || 0}, Latency: ${metrics.latency}ms`, type: 'inference' },
+        { msg: `[${now}] XGBOOST INFERENCE: Analyzing Satisfaction Curve (Input: WaitTime=${(metrics.latency/10).toFixed(1)}m, Congestion=${Math.round(checkInCount+securityCount)})`, type: 'model' },
+        { msg: `[${now}] LSTM FORECAST: Predicted Traffic Load @ ${simParams.increase_flights_percent}% Growth -> Result: ${Math.round((passengers?.length || 0) * (1 + simParams.increase_flights_percent/100))} pax/hr`, type: 'model' },
       ];
 
       if (activeAdvice) {
-        newLogs.push({ msg: `[${now}] NEURAL TRIGGER: Detected ${activeAdvice.title}. Mapping optimal solution via Strategic weights.`, type: 'suggestion' as const });
-        newLogs.push({ msg: `[${now}] AI RECOMMENDATION: ${activeAdvice.suggestion}`, type: 'suggestion' as const });
+        newLogs.push({ msg: `[${now}] NEURAL TRIGGER: Detected ${activeAdvice.title}. Mapping optimal solution via Strategic weights.`, type: 'suggestion' });
+        newLogs.push({ msg: `[${now}] AI RECOMMENDATION: ${activeAdvice.suggestion}`, type: 'suggestion' });
       } else {
-        newLogs.push({ msg: `[${now}] STABILITY CHECK: System within nominal parameters. Satisfaction Confidence: ${metrics.satisfaction}%`, type: 'result' as const });
+        newLogs.push({ msg: `[${now}] STABILITY CHECK: System within nominal parameters. Satisfaction Confidence: ${metrics.satisfaction}%`, type: 'result' });
       }
 
       setReasoningLogs(prev => [...prev, ...newLogs].slice(-50));
