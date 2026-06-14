@@ -42,7 +42,7 @@ export default function SimulationTechPage() {
       title: "Discrete-Event Kernel",
       icon: Activity,
       category: "SimPy & Python",
-      desc: "The backbone logic leverages SimPy. It models complex aircraft logistics, resource contention (queues), and the stochastic timing of every agent within a Python-driven environment.",
+      desc: "The backbone logic leverages SimPy. It models complex aircraft logistics, resource contention (queues), and the stochastic timing of every passenger within a Python-driven environment.",
       features: ["Process-based modeling", "Resource management", "Event-driven architecture"]
     },
     {

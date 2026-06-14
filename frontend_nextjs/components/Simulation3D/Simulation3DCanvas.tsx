@@ -180,7 +180,7 @@ const Simulation3DCanvas = () => {
       <div className="absolute bottom-8 left-8 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl pointer-events-none">
         <div className="space-y-1">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Entities</p>
-          <p className="text-2xl font-black text-slate-900 tracking-tight">{passengers.length} Agents</p>
+          <p className="text-2xl font-black text-slate-900 tracking-tight">{passengers.length} Passengers</p>
         </div>
       </div>
     </div>

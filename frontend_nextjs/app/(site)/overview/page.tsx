@@ -36,7 +36,7 @@ export default function OverviewPage() {
     {
       title: "Closed-Loop AI Advisor",
       icon: Zap,
-      desc: "What: The decision-support layer. How: An active monitoring agent that cross-references live sim-telemetry with model thresholds to deliver actionable operational advice.",
+      desc: "What: The decision-support layer. How: An active monitoring service that cross-references live sim-telemetry with model thresholds to deliver actionable operational advice.",
       details: ["Bottleneck Detection", "Strategic Suggestions", "Alert Synchronization"]
     }
   ];

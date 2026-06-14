@@ -58,7 +58,7 @@ const SimulationDashboard = () => {
         />
         
         <MetricsCard 
-          title="Active Agents"
+          title="Active Passengers"
           value={passengers.length}
           icon={Users}
           trend={`${Math.round(passengers.length / 1.5)}/min`}
