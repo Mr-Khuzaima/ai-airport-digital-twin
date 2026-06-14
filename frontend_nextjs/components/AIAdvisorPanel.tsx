@@ -8,7 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 const AIAdvisorPanel = () => {
   const { activeAdvice, metrics, simParams, passengers } = useSimulation();
   const [showLogs, setShowLogs] = useState(false);
-  const [reasoningLogs, setReasoningLogs] = useState<{msg: string, type: 'model' | 'inference' | 'result' | 'suggestion'}[]>([]);
+  
+  type LogType = 'model' | 'inference' | 'result' | 'suggestion';
+  const [reasoningLogs, setReasoningLogs] = useState<{msg: string, type: LogType}[]>([]);
+  
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // Generate real-time reasoning logs based on simulation state to prove AI logic
