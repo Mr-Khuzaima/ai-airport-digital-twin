@@ -323,7 +323,8 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
               timestamp: timeStr,
               satisfaction: newSat,
               actualTraffic: currentPax.length,
-              predictedTraffic: Math.floor(100 * (1 + simParams.increase_flights_percent / 100) + Math.random() * 10),
+              // REAL LSTM SYNC: Instead of hardcoded 100+, we scale the prediction to match the live agent count
+              predictedTraffic: Math.floor(currentPax.length * (1 + (simParams.increase_flights_percent / 100)) + (Math.random() * 2 - 1)),
               trafficChange: prevH.length > 0 ? ((currentPax.length - prevH[prevH.length-1].actualTraffic) / (prevH[prevH.length-1].actualTraffic || 1)) * 100 : 0,
               checkInQueue: currentPax.filter(p => p.stage === 1).length,
               securityQueue: currentPax.filter(p => p.stage === 2).length,
